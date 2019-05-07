@@ -1,6 +1,6 @@
 ## Service Wrapper
 
-- [English](http://cmsci.net/lvxy/servicewrapper/blob/master/README.md)
+- [English](README.md)
 
 ## 什么是Service Wrapper
 
@@ -8,13 +8,13 @@
 
 **Service Wrapper**通过**服务提取**和**服务调用**两个模块来实现系统的后台功能，并提供了一系列简单的**前端操作界面**以辅助用户完整地实现整个操作流程。**服务提取模块**面向**服务包装者**，该模块利用**爬虫工具和网页分割技术**得到网页核心数据位置，并根据数据在网页中的结构生成网页分割规则， 存储在数据库中。**服务调用模块**面向**服务调用者**，该模块为每个服务提供 RESTFul API  的描述信息和调用方法，服务调用者正确调用后，该模块返回结构化的数据。 同时，该系统提供了包含服务提取、服务调用和服务信息展示的一系列前端操作页面，供用户可以方便地使用之。
 
-![arch](http://cmsci.net/lvxy/servicewrapper/raw/master/FrontEnd/img/arch.png)
+![arch](introduction_image/arch.png)
 
 
 
 ## 技术架构
 
-![nginx](http://cmsci.net/lvxy/servicewrapper/raw/master/FrontEnd/img/nginx.png)
+![nginx](introduction_image/nginx.png)
 
 系统采用了`前后端分离`的开发模式，可分为前端和后端两部分。
 
@@ -34,8 +34,8 @@
 
 ## 配置
 
-- [后端配置](http://cmsci.net/lvxy/servicewrapper/blob/master/BackEnd/README_chn.md)
-- [前端配置](http://cmsci.net/lvxy/servicewrapper/blob/master/FrontEnd/README.md)
+- [后端配置](BackEnd/README_chn.md)
+- [前端配置](FrontEnd/README.md)
 
 ## 快速开始
 
@@ -47,7 +47,7 @@ Service Wrapper 采用`前后端分离`的系统架构，文件夹 `BackEnd` 为
 
 ### 下载
 
-```git clone https://github.com/lsummer/servicewrapper.git```
+```git clone https://github.com/ResearcherInCS/Service-Wrapper.git```
 
 ### 本地环境
 
@@ -111,25 +111,25 @@ Service Wrapper将封装的网页分为`静态网页`和`动态网页`， 其中
 
 - 第一步，打开起始网页--网页分析，在`Input 1`中输入`需要封装的网页的网址`, 点击`Click 1`。在解析日志窗口可看到解析日志`Extraction Log 1`，当出现`Click 2`按钮后，点击可进入至下一网页—表单选择。
 
-![step1](http://cmsci.net/lvxy/servicewrapper/raw/master/FrontEnd/img/step1.png)
+![step1](introduction_image/step1.png)
 
 
 
 - 第二步，在网页—表单选择中，根据”表单分块图“在`Select 1`中选择对应的表单编号，下侧的”自定义输入参数“会随之更改。在`Input 2`中输入或者更改参数名称、输入示例值和描述信息；在`Select 2`中选择输入参数后确定的按钮。（需要注意的是，在Input 2中输入的输入示例值，系统后台将自动将之填入对应区域，并点击`Select 2`中选择的按钮，进行获取数据。） 点击`Click 3`将对网页进行服务提取，可以在`Extraction 2`中看到解析日志。当出现`Click 4`按钮后，点击可进入至下一网页—正文及结果项选择。
 
-![step2](http://cmsci.net/lvxy/servicewrapper/raw/master/FrontEnd/img/step2.png)
+![step2](introduction_image/step2.png)
 
 - 第三步，在网页—正文及结果项选择中，根据”网页分块图“在`Select 3`中选择对应的表单编号，下侧的网页块中的文本信息会随之更改。在选择完成后，点击`Click 5`进入下一网页--包装。
 
-![step3](http://cmsci.net/lvxy/servicewrapper/raw/master/FrontEnd/img/step3.png)
+![step3](introduction_image/step3.png)
 
 - 第四步，在网页—包装中，可以在`Input 3`中看到API的基本信息和所提取到的数据默认信息，可以根据实际情况在`Input 3`中进行修改。修改完成后，点击`Click 6`即完成了服务包装工作。下一步，会进入服务调用示例网页--测试。
 
-![step4](http://cmsci.net/lvxy/servicewrapper/raw/master/FrontEnd/img/step4.png)
+![step4](introduction_image/step4.png)
 
 - 第五步，在完成服务提取后，服务包装者需要通过测试来查看服务提取的结果是否正确，参数是否成功。在测试页面中，”最大页数“参数是一个超参数，独立于服务之外，表示此次获取数据会提取网页中的多少页内的数据，默认最高为5页。”输入参数“为步骤二所填写的参数，指将以这些参数作为条件进行数据查询；”筛选参数“为步骤四所填写的参数，指获取到的所有数据将根据此处的参数做一次筛选，只返回满足该参数条件的数据。
 
-![step5](http://cmsci.net/lvxy/servicewrapper/raw/master/FrontEnd/img/step5.png)
+![step5](introduction_image/step5.png)
 
 
 
