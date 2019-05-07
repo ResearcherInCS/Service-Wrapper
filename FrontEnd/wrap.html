@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="Access-Control-Allow-Origin" content="*"/>
+    <title>包装</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta http-equiv="Access-Control-Allow-Origin" content="*"/>
+    <link href="css/common.css" type="text/css" rel="stylesheet"/>
+    <link href="css/base_680b3b8.css" type="text/css" rel="stylesheet"/>
+
+    <script src="js/jquery-3.2.1(2).js"></script>
+    <!--bootstrap-->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <!--VUE-->
+    <script src="js/vue.js"></script>
+</head>
+
+
+<body class="bg-White" style="min-width: 1280px;opacity: 0.9;background: #F4F4F4;">
+
+<div id="app">
+    <div class="new-index-title">
+        <div style="width:1080px;margin:0 auto;" class="pr">
+            <div class="clearfix pr">
+                <div class="topstyle">
+                    <ul id="tips">
+                    </ul>
+                    <ul style="float: right" id="buttons">
+                    </ul>
+                </div>
+                <div class="clearfix"></div>
+                <a class="new-header-logo fl" href="index.html"></a>
+
+            </div>
+        </div>
+    </div>
+    <section class="wrap2" style="width:1031px">
+        <div class="card zl clearfix ">
+            <form style="margin: 10px;padding:10px;">
+                <h3 style="text-align: center;margin-bottom: 20px">API信息填写</h3>
+                <div class="form-group" style="width:95%;margin:0 auto">
+                    <label for="exampleInputEmail1"
+                           style="margin-bottom:0;margin-left:20px;font-weight: bold">API名称</label>
+                    <input type="text" style="display: inline-block;width:88%;margin-left: 10px" class="form-control"
+                           id="exampleInputEmail1" aria-describedby="emailHelp" v-model="api_info.api_name">
+                    <!--<small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>-->
+                </div>
+                <div class="form-group" style="width:95%;margin:0 auto;margin-top:20px">
+                    <label for="exampleInputPassword1"
+                           style="margin-bottom:0;margin-left:20px;font-weight: bold">API描述</label>
+                    <input type="text" style="display: inline-block;width:88%;margin-left: 10px" class="form-control"
+                           id="exampleInputPassword1" v-model="api_info.api_description">
+                </div>
+
+                <h3 style="text-align: center;margin-top:20px">返回结果字段选择</h3>
+                <div style="text-align: center">
+                    <table class="table" style="margin: 0 auto ;margin-top:15px;width:93%;">
+                        <thead>
+                        <tr>
+                            <th scope="col" style="text-align: left">是否需要</th>
+                            <th scope="col" style="text-align: left">名称</th>
+                            <th scope="col" style="text-align: left">描述</th>
+                            <th scope="col" style="text-align: left">类型</th>
+                            <th scope="col" style="text-align: left">样例</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <template v-for="field in api_info.candidate[api_info.main_sec_id]">
+                            <tr>
+                                <th scope="row" style="text-align: center"><input type="checkbox"
+                                                                                  style="width:20px;height:20px"
+                                                                                  :checked="field.select===1"
+                                                                                  @click="reverseBool(field)"
+                                                                                  id="defaultCheck1"></th>
+                                <td><input type="text" v-model="field.name" class="form-control"></td>
+                                <td><input type="text" v-model="field.description" class="form-control"></td>
+                                <td>{{field.type}}</td>
+                                <td><input type="text" v-model="field.example"
+                                           :readonly="field.type=='text' ? false : true" class="form-control"></td>
+                            </tr>
+                        </template>
+                        </tbody>
+                    </table>
+
+                </div>
+
+                <div style="display: block;width: 100%;text-align: center">
+                    <button type="button" class="btn btn-primary" @click="postAPI" style="width:80px">提交</button>
+                </div>
+                <small class="form-text text-muted">{{resultText}}</small>
+            </form>
+        </div>
+    </section>
+</div>
+</body>
+<script type="module">
+    import {server} from "./js/config.js"
+
+    new Vue({
+        el: "#app",
+        data: {
+            resultText: "",
+            api_info: {
+                api_name: "",
+                api_description: "",
+                api_url: "",
+                img_link: "",
+                json_link: "",
+                api_crawl_rules_link: "",//link address
+                main_sec_id: 0,
+                sections: [
+                    "111", "222",
+                ],
+                candidate: [
+                    [
+                        {
+                            id: 0,
+                            name: "text_1/link_1/img_1",//参数名
+                            description: "default",  //参数解释
+                            type: "text/link/img",
+                            example: "",   //示例值
+                            select: "1/0"  //是否选择此值
+                        }
+                    ]
+                ]
+            }
+        },
+        methods: {
+            postAPI() {
+                console.log("post data", JSON.stringify(this.api_info))
+                $.ajax({
+                    url: server + "service",
+                    type: "POST",
+                    // crossOrigin: true,
+                    data: JSON.stringify(this.api_info),
+                    contentType: "application/json; charset=utf-8",
+                    // dataType: "json",
+                    success: function (result) {
+                        console.log("post API success", result)
+                        if (result.status != 10000) {
+                            alert(result.msg)
+                        }
+                        else {
+                            window.location.href = "test.html?api_id=" + result.data.api_id
+                        }
+                        this.resultText = "成功生成API"
+                    },
+                    fail: function(re,me){
+                        console(re);
+                        console(me);
+                    }
+                })
+            }
+        },
+        created() {
+            this.api_info = JSON.parse(localStorage.getItem("api_info"))
+        }
+    })
+</script>
+</html>

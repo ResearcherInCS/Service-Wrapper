@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="Access-Control-Allow-Origin" content="*"/>
+    <title>测试</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link href="css/common.css" type="text/css" rel="stylesheet"/>
+    <link href="css/base_680b3b8.css" type="text/css" rel="stylesheet"/>
+
+    <script src="js/jquery-3.2.1(2).js"></script>
+    <!--bootstrap-->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <!--VUE-->
+    <script src="js/vue.js"></script>
+</head>
+
+<body class="bg-White" style="min-width: 1280px;opacity: 0.9;background: #F4F4F4;">
+
+<div id="app">
+    <section class="wrap2 " style="width:1031px">
+        <div class="card zl clearfix ">
+            <div class="row" style="margin: 10px;padding:10px;">
+                <div class="col-md-6">
+                    <h3 style="text-align: left;margin-bottom: 20px">测试参数填写</h3>
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <label for="api_id">ID</label>
+                            <input type="email" class="form-control" id="api_id" placeholder="ID"
+                                   v-model="api_info.api_id" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="api_maxPage">最大页数</label>
+                            <small>-1表示不限制</small>
+                            <input type="email" class="form-control" id="api_maxPage" placeholder="最大页数"
+                                   v-model="maxPage">
+                        </div>
+                        <div class="form-group">
+                            <div class="btn-group">
+                                <div class="btn-group">
+                                    <button id="dropdown-btn1" type="button" class="btn btn-info dropdown-toggle"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                        添加输入参数
+                                        <span class="caret"></span>
+                                    </button>
+                                    <div aria-labelledby="dropdown-btn1" class="dropdown-menu">
+                                        <template v-for="field in inputParm" class="caret">
+                                            <li @click="addInputParm(field)"><a>{{field.query_name}}</a></li>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div class="btn-group">
+                                    <button id="dropdown-btn2" type="button" class="btn btn-info dropdown-toggle"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                        添加筛选参数
+                                        <span class="caret"></span>
+                                    </button>
+                                    <div aria-labelledby="dropdown-btn2" class="dropdown-menu">
+                                        <template v-for="field in filterParm" class="caret">
+                                            <li @click="addFilterParm(field)"><a>{{field.name}}</a></li>
+                                        </template>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-success" @click="doTest">点击测试</button>
+                            </div>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label for="api_url">测试URL</label>
+                            <textarea class="form-control" rows="4" id="api_url" v-model="targetURL"></textarea>
+                        </div>
+                    </form>
+
+                </div>
+
+                <div class="col-md-6">
+                    <h3 style="text-align: left;">返回结果</h3>
+                    <form>
+                        <div class="form-group">
+                            <label for="response">Response Body</label>
+                            <small style="color: #0ca09b">{{responseMsg}}</small>
+                            <textarea class="form-control" rows="10" id="response" v-model="responseData"></textarea>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </section>
+</div>
+</body>
+<script type="module">
+    import {server} from "./js/config.js"
+
+    new Vue({
+        el: "#app",
+        data: {
+            responseData: "",
+            responseMsg: "",
+            maxPage: -1,
+            targetURL: "",
+            api_info: {
+                api_id: 0,
+                api_name: "",
+                api_description: "",
+                api_url: "",
+                img_link: "",
+                json_link: "",
+                api_crawl_rules_link: "",//link address
+                main_sec_id: 0,
+                sections: [
+                    "111", "222",
+                ],
+                api_request_parameters_candidate: [
+                    {
+                        level: 0,
+                        query_name: "__max_page",
+                        required: false,
+                        type: "int",
+                    }
+                ],
+                candidate: [
+                    [
+                        {
+                            id: 0,
+                            name: "dd",//参数名
+                            description: "default",  //参数解释
+                            type: "text/link/img",
+                            example: "",   //示例值
+                            select: "0",
+                            query_name: ""//是否选择此值
+                        }
+                    ]
+                ],
+                api_network: [""]
+            }
+        },
+        methods: {
+            updateInfo(id) {
+                this.getAPIInfo(id, (result) => {
+                    console.log("result", result)
+                    this.api_info = result.data
+                    this.targetURL = server + "call_service/" + this.api_info.api_id + "?" + "__max_page=" + this.maxPage
+                    for (let field in this.api_info.api_request_parameters_candidate) {
+                        if (field.required)
+                            this.targetURL = this.targetURL + "&" + field.query_name + "="
+                    }
+                })
+            },
+            getAPIInfo(id, success) {
+                $.ajax({
+                        url: server + "service?api_id=" + id,
+                        type: "GET",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: success
+                    }
+                )
+            },
+            addFilterParm(field) {
+                console.log("add filter parameters", field)
+                this.targetURL += "&" + field.query_name + "=" + field.example
+                this.targetURL = this.targetURL.replace(/\+/g, "%2B")  //URL中的"+"号会被转义成空格，编码成%2B可以避免
+            },
+            addInputParm(field) {
+                console.log("add input parameters", field)
+                this.targetURL += "&" + field.query_name + "="
+                this.targetURL = this.targetURL.replace(/\+/g, "%2B")  //URL中的"+"号会被转义成空格，编码成%2B可以避免
+            },
+            getUrlParam() {
+                let name = "api_id"
+                let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)")
+                let r = window.location.search.substr(1).match(reg)
+                if (r != null) return unescape(r[2])
+                return ""
+            },
+            doTest() {
+                this.responseMsg = "正在载入中......"
+                this.responseData = "请等待请求返回......"
+                $.ajax({
+                        url: this.targetURL,
+                        type: "GET",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: (result) => {
+                            console.log("callResult", result)
+                            this.responseData = JSON.stringify(result.data)
+                            this.responseMsg = JSON.stringify(result.msg)
+                        }
+                    }
+                )
+                this.getAPIInfo(this.api_info.api_id, (result) => {
+                    this.api_info = result.data
+                })
+            },
+        },
+        computed: {
+            filterParm() {
+                console.log("filter Parameters", this.api_info.candidate[this.api_info.main_sec_id])
+                let firstRs = this.api_info.candidate[this.api_info.main_sec_id].filter((field) => {
+                    return field.select == 1
+                })
+                if (firstRs.length == 0) return {name: "无可选参数"}
+                else return firstRs
+            },
+            inputParm() {
+                console.log("input Parameters", this.api_info.api_request_parameters_candidate)
+                let firstRs = this.api_info.api_request_parameters_candidate.filter((field) => {
+                    return field.level == 1
+                })
+                if (firstRs.length == 0) return {query_name: "无可选参数", type: ""}
+                else return firstRs
+            }
+        },
+        watch: {
+            maxPage: function (newValue, oldValue) {
+                this.targetURL = this.targetURL.replace(/__max_page=-?\d*/, "__max_page=" + newValue)
+
+            }
+        },
+        beforeCreated() {
+            console.log("created")
+            this.updateInfo(this.getUrlParam())
+
+        }
+    })
+</script>
+</html>

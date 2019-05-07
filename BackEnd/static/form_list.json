@@ -1,0 +1,72 @@
+{
+	"url": "http://gujia.mlr.gov.cn/JGPublish/Publish/Index",
+	"form_check": 0,
+	"main_form_index": 0,
+	"forms": [
+		{
+			"id": 2,
+			"main_btn_index": 0,
+			"len": 28,
+			"css_selector": "html > body:nth-child(2) > form > div:nth-child(7) > div > div:nth-child(2) > div:nth-child(2) > iframe:nth-child(3) >f>  html > body:nth-child(2) > form",
+			"input_list": [
+				{
+					"id": 0,
+					"type": "text",
+					"name": "no_key_name_36",
+					"required": false,
+					"css_selector": "html > body:nth-child(2) > form > div:nth-child(7) > div > div:nth-child(2) > div:nth-child(2) > iframe:nth-child(3) >f> html > body:nth-child(2) > form > div:nth-child(8) > div > span > input:nth-child(2)",
+					"value": "123",
+					"query_name": "no_key_name_36",
+					"description": "",
+					"index": "T1",
+					"form_type": 1
+				},
+				{
+					"id": 1,
+					"type": "select",
+					"name": "no_key_name_127",
+					"required": false,
+					"css_selector": "html > body:nth-child(2) > form > div:nth-child(7) > div > div:nth-child(2) > div:nth-child(2) > iframe:nth-child(3) >f> html > body:nth-child(2) > form > table:nth-child(9) > tfoot:nth-child(3) > tr > td > div:nth-child(5) > select",
+					"value": 0,
+					"query_name": "no_key_name_127",
+					"description": "",
+					"index": "T2",
+					"form_type": 1
+				},
+				{
+					"id": 2,
+					"type": "text",
+					"name": "no_key_name_154",
+					"required": false,
+					"css_selector": "html > body:nth-child(2) > form > div:nth-child(7) > div > div:nth-child(2) > div:nth-child(2) > iframe:nth-child(3) >f> html > body:nth-child(2) > form > table:nth-child(9) > tfoot:nth-child(3) > tr > td > div:nth-child(5) > div:nth-child(7) > input",
+					"value": "",
+					"query_name": "no_key_name_154",
+					"description": "",
+					"index": "T3",
+					"form_type": 1
+				}
+			],
+			"submit_button_list": [
+				{
+					"id": 0,
+					"type": "button",
+					"name": "no_key_name_37",
+					"required": false,
+					"css_selector": "html > body:nth-child(2) > form > div:nth-child(7) > div > div:nth-child(2) > div:nth-child(2) > iframe:nth-child(3) >f> html > body:nth-child(2) > form > div:nth-child(8) > div > span:nth-child(2) > input",
+					"index": "b1",
+					"form_type": 1
+				},
+				{
+					"id": 1,
+					"type": "button",
+					"name": "no_key_name_155",
+					"required": false,
+					"css_selector": "html > body:nth-child(2) > form > div:nth-child(7) > div > div:nth-child(2) > div:nth-child(2) > iframe:nth-child(3) >f> html > body:nth-child(2) > form > table:nth-child(9) > tfoot:nth-child(3) > tr > td > div:nth-child(5) > div:nth-child(7) > input:nth-child(2)",
+					"index": "b2",
+					"form_type": 1
+				}
+			],
+			"type": 1
+		}
+	]
+}

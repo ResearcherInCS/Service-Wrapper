@@ -1,0 +1,287 @@
+#cnzz_stat_icon_1254393647 {
+	display: none
+}
+
+.footer {
+	position: relative;
+	background: #1e374c;
+	height: 81px;
+	min-width: 1080px;
+	margin-top: 160px;
+	z-index: 1 
+}
+
+.footer {
+	min-width: 1080px
+}
+
+.footer-inner {
+	padding-top: 36px
+}
+
+.footer-links {
+	position: relative
+}
+
+.footer-dd {
+	padding-left: 15px
+}
+
+.footer-dt {
+	font-size: 15px;
+	margin-bottom: 15px;
+	margin-top: 2px;
+	padding-left: 15px;
+	color: #fff
+}
+
+.footer-link,.footer-contact-link {
+	color: #a7effe;
+	margin-bottom: 10px;
+	display: inline-block
+}
+
+.footer-contact-link {
+	color: #a7effe
+}
+
+.footer-seperator {
+	width: 1px;
+	height: 86px;
+	margin: 12px 14px 0 100px
+}
+
+.scroll-bar {
+	position: fixed;
+	z-index: 100;
+	bottom: 95px;
+	left: 50%;
+	margin-left: 539px
+}
+
+.scroll-bar-ul {
+	border: 1px solid #3684CC
+}
+
+.bb1s {
+	border-bottom: 1px solid #3684CC
+}
+
+.scroll-bar-item {
+}
+
+.bar-link {
+	display: block;
+	color: #fff;
+	width: 60px;
+	height: 60px;
+	line-height: 30px;
+	background-color: #3684CC;
+	text-align: center;
+	background-repeat: no-repeat;
+	background-position: center center;
+	font-size: 13px;
+	overflow: hidden
+}
+
+.bar-link-up {
+	display: block;
+	width: 62px;
+	height: 32px;
+	background-image: url(../images/uptotop_9d58805.png);
+	overflow: hidden
+}
+
+.bar-link-no-indent {
+	text-indent: 0
+}
+
+.bar-link:hover {
+}
+
+.bar-link:active {
+	background-color: #999
+}
+
+.bar-link-sub {
+	line-height: 1.5;
+	margin-top: 1px
+}
+
+.bar-link-pri {
+	display: block;
+	margin: 0 auto;
+	margin-top: 4px;
+	margin-bottom: -2px;
+	width: 33px;
+	height: 33px
+}
+
+.bar-create {
+	background-image: url(../images/chuangjiananli_2d08c17.png)
+}
+
+.bar-recommend {
+	background-image: url(../images/tuijianfuwu_4976453.png)
+}
+
+.bar-connect {
+	background-image: url(../images/lianxiguanfang_58fcaf0.png)
+}
+
+.bar-link-up:hover {
+	text-decoration: none;
+	filter: alpha(opacity=80);
+	-moz-opacity: .8;
+	-khtml-opacity: .8;
+	opacity: .8
+}
+
+.bar-link:hover {
+	text-decoration: none;
+	filter: alpha(opacity=80);
+	-moz-opacity: .8;
+	-khtml-opacity: .8;
+	opacity: .8
+}
+
+.bar-feedback {
+	background-image: url(../images/icon-message_e39a891.png)
+}
+
+#footer_feedback {
+	cursor: pointer
+}
+
+.msg-cont-modal .form-item {
+	margin-left: 50px;
+	padding-top: 20px
+}
+
+.msg-cont-modal .form-item-error {
+	margin-left: 130px
+}
+
+.msg-cont-modal .form-label {
+	width: 80px;
+	display: inline-block
+}
+
+.msg-cont-modal input {
+	width: 250px
+}
+
+.msg-coop-modal {
+	width: 620px;
+	padding: 0 30px
+}
+
+.msg-case-modal {
+	width: 520px;
+	padding: 0 30px
+}
+
+.msg-coop-modal .form-item {
+	width: 300px
+}
+
+.msg-coop-modal .form-label {
+	display: block;
+	vertical-align: top;
+	padding-top: 20px
+}
+
+.msg-coop-modal input[type=text] {
+	padding: 10px 10px 11px;
+	width: 278px
+}
+
+.msg-coop-modal select {
+	width: 300px
+}
+
+.msg-coop-modal input[type=text].long {
+	width: 598px
+}
+
+.msg-coop-modal input[type=text].case-long {
+	width: 420px
+}
+
+.msg-coop-modal .co-logo {
+	display: block;
+	width: 102px;
+	height: 102px;
+	border: 1px solid #cecece;
+	border-radius: 2px;
+	background-position: center;
+	background-size: 240px auto;
+	background-repeat: no-repeat
+}
+
+.case-label {
+	width: 70px
+}
+
+.btn-gray-white {
+	border: 1px solid #e2d7d7;
+	border-radius: 2px;
+	color: #8ac;
+	text-align: center;
+	display: inline-block
+}
+
+.btn-form-check {
+	padding: 8px 25px;
+	line-height: 15px;
+	vertical-align: inherit
+}
+
+.footer-label {
+	width: 80px
+}
+
+.footer-select {
+	color: #fff;
+	width: 169px;
+	padding-left: 5px;
+	height: 20px;
+	line-height: 20px
+}
+
+.footer-select.select {
+	background-image: url(../images/footer-select_c15395b.png);
+	background-position: 155px 8px;
+	background-repeat: no-repeat
+}
+
+.footer-select-dom {
+	background-color: #485C6C;
+	width: 169px;
+	padding-left: 5px;
+	bottom: 20px;
+	left: 0
+}
+
+.footer-select-item:hover,.footer-select-item.active {
+	background-image: url(../images/footer-select-choose_b99b0d6.png);
+	background-repeat: no-repeat;
+	background-position: 151px 6px
+}
+
+#footer-qq-group {
+	width: 155px
+}
+
+.service-level-hover {
+	background: url(../images/service-level-hover-2_1ff8ac9.png);
+	width: 248px;
+	height: 98px;
+	position: absolute;
+	z-index: 100;
+	display: none
+}
+
+.level-tag,.icon-level {
+	cursor: pointer
+}

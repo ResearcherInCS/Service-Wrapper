@@ -1,0 +1,11 @@
+.wrap { position: relative; width: 900px; margin: 0 auto;}
+.centered-btns_nav { position: absolute!important; top: 50%!important; z-index: 2!important; width: 38px!important; height: 61px!important; margin-top: -40px!important; line-height: 200px!important; background-image: url(../images/arrow.gif)!important; overflow: hidden!important; opacity: .7!important;}
+.next { right: 0!important; background-position: right 0!important;}
+.centered-btns_nav:active { opacity: 1!important;}
+.centered-btns_tabs { margin-top: 15px!important; text-align: center!important; font-size: 0!important; list-style-type: none!important;
+    bottom: -85% !important;
+    right: -42% !important;
+position: relative!important;}
+.centered-btns_tabs li { display: inline-block !important; margin: 0 3px!important; *display: inline!important; *zoom: 1!important;}
+.centered-btns_tabs a { display: inline-block!important; width: 9px!important; height: 9px!important; border-radius: 50%!important; line-height: 20px!important; background-color: rgba(0, 0, 0, .3)!important; background-color: #ccc\9!important; overflow: hidden!important; *display: inline!important; *zoom: 1!important;}
+.centered-btns_tabs .centered-btns_here a { background-color: rgba(0, 0, 0, .8)!important; background-color: #666\9!important;}

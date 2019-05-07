@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Access-Control-Allow-Origin" content="*" />
+    <title>列表</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="css/common.css" type="text/css" rel="stylesheet" />
+    <link href="css/base_680b3b8.css" type="text/css" rel="stylesheet" />
+    <!--JQuery-->
+    <script src="js/jquery-3.2.1(2).js"></script>
+    <!--VUE-->
+    <script src="js/vue.js"></script>
+</head>
+<style>
+    body {
+        font-family: PingFangSC-Semibold;
+        font-size: 15px;
+        letter-spacing: 0;
+    }
+
+    .service-navi-list {
+        background: #FFFFFF;
+        box-shadow: 0 7px 18px 0 rgba(189, 187, 187, 0.50);
+        width: 1098px;
+        height: 70px;
+    }
+
+    .service-navi-list li {
+        background: white;
+        width: 130px;
+        height: 70px;
+        font-family: PingFangSC-Semibold;
+        font-size: 17px;
+        color: black;
+        letter-spacing: 0;
+    }
+
+    .service-navi-list li.active {
+        background: #0F7BD4;
+        color: white;
+    }
+
+    .detail-menu {
+        margin-top: 22px !important;
+    }
+
+    .service-cont-list {
+        background: #FFFFFF;
+        box-shadow: 0 7px 18px 0 rgba(189, 187, 187, 0.50);
+        width: 1098px;
+    }
+
+    .api-record {
+        background: #FFFFFF;
+        box-shadow: 0 7px 18px 0 rgba(189, 187, 187, 0.50);
+        border-radius: 5px;
+        width: 1098px;
+        height: 530px;
+        margin-bottom: 20px;
+    }
+
+    #lean_overlay {
+        position: fixed;
+        z-index: 100;
+        top: 0px;
+        left: 0px;
+        height: 100%;
+        width: 100%;
+        background: #000;
+        display: none;
+    }
+
+    #w {
+        display: block;
+        width: 750px;
+        margin: 0 auto;
+        padding-top: 30px;
+    }
+
+    #content {
+        display: block;
+        width: 100%;
+        background: #fff;
+        padding: 25px 20px;
+        padding-bottom: 35px;
+        -webkit-box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 2px 0px;
+        -moz-box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 2px 0px;
+        box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 2px 0px;
+    }
+
+    /** custom login button **/
+
+    .flatbtn-blu {
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        display: inline-block;
+        outline: 0;
+        border: 0;
+        color: #edf4f9;
+        text-decoration: none;
+        background: #0F7BD4;
+        border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+        font-size: 1.3em;
+        padding: 12px 26px 12px 26px;
+        line-height: normal;
+        text-align: center;
+        vertical-align: middle;
+        cursor: pointer;
+        text-transform: uppercase;
+        text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+        -webkit-border-radius: 3px;
+        -moz-border-radius: 3px;
+        border-radius: 3px;
+        -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+        -moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+        font-family: PingFangSC-Semibold;
+        font-size: 20px;
+        color: #FFFFFF;
+        letter-spacing: 0;
+    }
+
+    .flatbtn-blu:hover {
+        color: #fff;
+        background-color: #519dde;
+    }
+
+    .flatbtn-blu:active {
+        -webkit-box-shadow: inset 0 1px 5px rgba(0, 0, 0, 0.1);
+        -moz-box-shadow: inset 0 1px 5px rgba(0, 0, 0, 0.1);
+        box-shadow: inset 0 1px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    /** modal window styles **/
+
+    #lean_overlay {
+        position: fixed;
+        z-index: 100;
+        top: 0px;
+        left: 0px;
+        height: 100%;
+        width: 100%;
+        background: #000;
+        display: none;
+    }
+
+    #loginmodal {
+        width: 300px;
+        padding: 15px 20px;
+        background: #FFFFFF;
+        -webkit-border-radius: 6px;
+        -moz-border-radius: 6px;
+        border-radius: 6px;
+        -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+        -moz-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+    }
+
+    #loginform label {
+        display: block;
+        font-size: 1.1em;
+        font-weight: bold;
+        color: black;
+        margin-bottom: 3px;
+    }
+
+    .txtfield {
+        display: block;
+        width: 90% !important;
+        padding: 6px 5px;
+        margin-bottom: 15px;
+        font-family: 'Helvetica Neue', Helvetica, Verdana, sans-serif;
+        color: black;
+        font-size: 16px;
+        border: 1px solid #B9B9B9;
+        border-radius: 5px;
+        height: 35px;
+    }
+
+    .txtfield:focus {
+        outline: none;
+        color: #525864;
+        border-color: #84c0ee;
+        -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15), 0 0 7px #96c7ec;
+        -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15), 0 0 7px #96c7ec;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15), 0 0 7px #96c7ec;
+    }
+
+    h2 {
+        font-family: PingFangSC-Semibold;
+        font-size: 25px;
+        color: #242536;
+        letter-spacing: 0;
+        font-weight: normal;
+        color: black;
+        padding-left: 20px;
+    }
+</style>
+
+<body style="min-width: 1280px;opacity: 0.9;background: #F4F4F4;">
+    <section class="pr" style="z-index: 1;" id="app">
+        <div id="wrapper" class="main clearfix">
+            <section id="js-service-detail" class="service-detail" data="2422" data-shop="1294">
+                <ul id="js-service-navi-list" class="service-navi-list tc clearfix">
+                    <li id="api-tag" class="service-navi-item js-navi-item fl active" data-navi-item="1">
+                        <div class="dib detail-menu">服务详情</div>
+                    </li>
+                </ul>
+                <div id="js-service-cont-list" class="service-cont-list">
+                    <div class="service-cont-item js-service-cont-item " data-item-content="1">
+                        <section class="clearfix">
+                            <nav class="api-aside fl">
+                                <ul class="navi-list" id="optionUl">
+                                    <template v-for="(api,index) in list_api">
+                                        <li class="navi-item pr active" @click="load_API_info(index)">
+                                            <h5 class="navi-title text-overflow-fix" data-service-menu="0" data-api-menu="0">{{api.api_name}}</h5>
+                                            <i></i>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </nav>
+                            <dl id="js-interface-list" class="interface-list fl">
+                                <dt class="interface-item">
+                                    <div class="interface-detail db clearfix" data-api-detail="0">
+                                        <div class="interface-line clearfix">
+                                            <span class="api-content-left title" style="color: #333; font-size:16px; font-Weight: 600;width: 100% ">{{api_info.api_name}}</span>
+                                        </div>
+                                        <p class="interface-line clearfix">
+                                            <span class="api-content-left title">接口描述 :</span>
+                                            <span id="desc" class="api-content-right" data-api-link="3653">{{api_info.api_description}}</span>
+                                        </p>
+                                        <p class="interface-line clearfix">
+                                            <span class="api-content-left title">接口地址 :</span>
+                                            <span id="address" class="api-content-right" data-api-link="3653">{{api_info.url}}</span>
+                                        </p>
+                                        <p class="interface-line clearfix">
+                                            <span class="api-content-left title">请求方法 :</span>
+                                            <span id="way" class="api-content-right" data-api-req-method="3653">HTTP GET</span>
+                                        </p>
+                                        <div class="interface-line clearfix">
+                                            <span class="api-content-left title" style="font-size: 17px;font-weight:600">请求参数 :</span>
+                                        </div>
+                                        <!-- <div class="interface-line clearfix">
+                                            <span class="api-content-left title">系统级请求参数 :</span>
+                                        </div>
+                                        <div class="interface-line clearfix">
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th class="td-2">名称</th>
+                                                        <th class="td-2">类型</th>
+                                                        <th class="td-3">必填</th>
+                                                        <th class="td-5">描述</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="qtbody0" data-api-param="0">
+                                                    <template v-for="item in system_levelParameter">
+                                                        <tr>
+                                                            <td class="td-2" data-param-name="">{{item.query_name}}</td>
+                                                            <td class="td-2">{{item.type}}</td>
+                                                            <td class="td-3">{{item.required?"是":"否"}}</td>
+                                                            <td class="td-5 api-param-ellipsis">
+                                                                {{clearDesc(item)}}
+                                                            </td>
+                                                        </tr>
+                                                    </template>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="interface-line clearfix">
+                                            <span class="api-content-left title">查询级请求参数（需要填充到表单里）:</span>
+                                        </div>
+                                        <div class="interface-line clearfix">
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th class="td-2">名称</th>
+                                                        <th class="td-2">类型</th>
+                                                        <th class="td-3">必填</th>
+                                                        <th class="td-5">描述</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="yytbody0" data-api-param="0">
+                                                    <template v-for="item in query_levelParameter">
+                                                        <tr>
+                                                            <tr>
+                                                                <td class="td-2" data-param-name="">{{item.query_name}}</td>
+                                                                <td class="td-2">{{item.type}}</td>
+                                                                <td class="td-3">{{item.required?"是":"否"}}</td>
+                                                                <td class="td-5 api-param-ellipsis">
+                                                                    {{clearDesc(item)}}
+                                                                </td>
+                                                            </tr>
+                                                        </tr>
+                                                    </template>
+
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="interface-line clearfix">
+                                            <span class="api-content-left title">返回级请求参数（返回参数中的） :</span>
+                                        </div>
+                                        <div class="interface-line clearfix">
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th class="td-2">名称</th>
+                                                        <th class="td-2">类型</th>
+                                                        <th class="td-3">必填</th>
+                                                        <th class="td-5">描述</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody data-api-param="0">
+                                                    <template v-for="item in filter_levelParameter">
+                                                        <tr>
+                                                            <td class="td-2" data-param-name="">{{item.query_name}}</td>
+                                                            <td class="td-2">{{item.type}}</td>
+                                                            <td class="td-3">{{item.required?"是":"否"}}</td>
+                                                            <td class="td-5 api-param-ellipsis">
+                                                                {{clearDesc(item)}}
+                                                            </td>
+                                                        </tr>
+                                                    </template>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+
+                                        <div class="interface-line clearfix">
+                                            <span class="api-content-left title" style="font-size: 17px;font-weight:600">返回参数 :</span>
+                                        </div>
+                                        <div class="interface-line clearfix">
+                                            <span class="api-content-left title">系统级返回参数 :</span>
+                                        </div>
+                                        <div class="interface-line clearfix">
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th class="td-1">名称</th>
+                                                        <th class="td-2">类型</th>
+                                                        <th class="td-4">示例值</th>
+                                                        <th class="td-5">描述</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="fhtbody10" data-api-param="0">
+                                                    <tr>
+                                                        <td>status</td>
+                                                        <td class="td-2">int</td>
+                                                        <td class="td-4">10000</td>
+                                                        <td class="td-5 pr">返回的状态码</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>msg</td>
+                                                        <td class="td-2">string</td>
+                                                        <td class="td-4">请求成功</td>
+                                                        <td class="td-5 pr">返回的结果信息</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>data</td>
+                                                        <td class="td-2">json</td>
+                                                        <td class="td-4">null</td>
+                                                        <td class="td-5 pr">返回的实际数据</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="interface-line clearfix">
+                                            <span class="api-content-left title">应用级返回参数 :</span>
+                                        </div>
+                                        <div class="interface-line clearfix">
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th class="td-1">名称</th>
+                                                        <th class="td-2">类型</th>
+                                                        <th class="td-4">示例值</th>
+                                                        <th class="td-5">描述</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="fhtbody20" data-api-param="0">
+                                                    <template v-for="item in api_info.api_candidate[api_info.main_sec_id]">
+                                                        <tr>
+                                                            <td class="td-1" data-param-name="">{{item.query_name}}</td>
+                                                            <td class="td-2">{{item.type}}</td>
+                                                            <td class="td-4">{{item.example}}</td>
+                                                            <td class="td-5 pr">{{item.description}}</td>
+                                                        </tr>
+                                                    </template>
+
+                                                </tbody>
+                                            </table>
+                                        </div> -->
+                                    </div>
+                                </dt>
+                            </dl>
+                            <img src="" id="bigImg" width="100%" style="display: none;">
+                        </section>
+                    </div>
+                    <div class="service-cont-item js-service-cont-item dn" data-item-content="3">
+                        <dl class="interface-list table">
+                            <table class="err-table">
+                                <thead>
+                                    <tr>
+                                        <th class="record-col-15">错误码</th>
+                                        <th class="record-col-45">错误码说明</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="errorBoddy">
+                                    <template v-for="item in error_table">
+                                        <tr>
+                                            <td class="record-col-15">{{item.status}}</td>
+                                            <td class="record-col-45">{{item.msg}}</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </dl>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <footer>
+            &nbsp;
+        </footer>
+    </section>
+</body>
+<script type="module">
+    import { server } from "./js/config.js";
+    new Vue({
+        el: "#app",
+        data: {
+            api_info: {
+                "api_crawl_rules_link": "http://183.129.170.180:18088/statics/15455686129944/rules_list.json",
+                "api_description": "Hacker News",
+                "api_id": 0,
+                "api_name": "Hacker News",
+                "api_network": [],
+                "api_request_parameters_candidate": [
+                    {
+                        "description": "[系统级别参数]: 最大页数限制，默认为5页，请设置较小的页数以避免返回时间过长。",
+                        "example": 3,
+                        "level": 0,
+                        "query_name": "__max_page",
+                        "required": false,
+                        "type": "int"
+                    },
+                    {
+                        "description": "[返回结果的筛选参数]: text_description",
+                        "example": "google",
+                        "level": 2,
+                        "query_name": "text_0",
+                        "required": false,
+                        "type": "text"
+                    }
+                ],
+                "api_result_example": [
+                    {
+                        "record_id": 0,
+                        "text_0": "Search:"
+                    }
+                ],
+                "api_url": "https://news.ycombinator.com/",
+                "candidate": [
+                    [
+                        {
+                            "description": "text_description",
+                            "example": "1.",
+                            "id": 0,
+                            "name": "title",
+                            "parent_id": -1,
+                            "query_name": "title",
+                            "select": 1,
+                            "type": "text"
+                        },
+                    ]
+                ],
+                "form_rules_link": "http://183.129.170.180:18088/statics/form_list.json",
+                "img_link": "http://183.129.170.180:18088/static/15455686129944/seg_shot.png",
+                "json_link": "http://183.129.170.180:18088/statics/15455686129944/example.json",
+                "main_sec_id": 0,
+                "url": "http://service.cheosgrid.org:8089/call_service/90"
+            },
+            error_table: [
+                { 'status': 200, 'msg': '请求成功,共处理x页,其中第2,5页处理失败. 或者 请求成功,共处理x页.', data: '' },
+                { 'status': 201, 'msg': '缺失api_crawl_rules_link文件或candidate项，无法处理网页', 'data': "" },
+                { 'status': 403, 'msg': '请求失败，服务器请求爬虫规则失败', 'data': '' },
+                { 'status': 410, 'msg': '爬虫失败，超时或请求错误', 'data': '' },
+                { 'status': 411, 'msg': '解析失败，网页信息错误', 'data': '' },
+                { 'status': 425, 'msg': '爬虫超时', 'data': '' }
+            ],
+            list_api: [
+                {
+                    "api_crawl_rules_link": "http://183.129.170.180:18088/statics/15455686129944/rules_list.json",
+                    "api_description": "Hacker News",
+                    "api_id": 0,
+                    "api_name": "Hacker News",
+                    "api_network": [],
+                    "api_request_parameters_candidate": [
+                        {
+                            "description": "[系统级别参数]: 最大页数限制，默认为5页，请设置较小的页数以避免返回时间过长。",
+                            "example": 3,
+                            "level": 0,
+                            "query_name": "__max_page",
+                            "required": false,
+                            "type": "int"
+                        },
+                        {
+                            "description": "[返回结果的筛选参数]: text_description",
+                            "example": "google",
+                            "level": 2,
+                            "query_name": "text_0",
+                            "required": false,
+                            "type": "text"
+                        }
+                    ],
+                    "api_result_example": [
+                        {
+                            "record_id": 0,
+                            "text_0": "Search:"
+                        }
+                    ],
+                    "api_url": "https://news.ycombinator.com/",
+                    "candidate": [
+                        [
+                            {
+                                "description": "text_description",
+                                "example": "1.",
+                                "id": 0,
+                                "name": "title",
+                                "parent_id": -1,
+                                "query_name": "title",
+                                "select": 1,
+                                "type": "text"
+                            },
+                        ]
+                    ],
+                    "form_rules_link": "http://183.129.170.180:18088/statics/form_list.json",
+                    "img_link": "http://183.129.170.180:18088/static/15455686129944/seg_shot.png",
+                    "json_link": "http://183.129.170.180:18088/statics/15455686129944/example.json",
+                    "main_sec_id": 0,
+                    "url": "http://service.cheosgrid.org:8089/call_service/90"
+                },
+            ]
+        },
+        methods: {
+            load_list() {
+                $.get(server + "all_service")
+                    .done((rs) => {
+                        console.log("all services", rs);
+                        this.list_api = rs.data;
+                        this.load_API_info(0);
+                    })
+                    .fail((re, me) => {
+                        console.log("Get list fail", re, me);
+                    })
+            },
+            load_API_info(id) {
+                // $.get(server+"service?api_id="+id)
+                //     .done((rs)=>{
+                //         this.api_info=JSON.parse(rs);
+                //     })
+                //     .fail((re,me)=>{
+                //         console.log("Get api info fail",re,me);
+                //     })
+                this.api_info = this.list_api[id];
+                console.log("api_info", this.api_info);
+            },
+            clearDesc(item) {
+                let desc = item.description;
+                console.log("clearDesc", item);
+                return desc.substring(desc.indexOf("：") + 1);
+            },
+        },
+        computed: {
+            system_levelParameter() {
+                let result = this.api_info.api_request_parameters_candidate.filter((value) => {
+                    return value.level === 0;
+                })
+                console.log("system_levelParameter", result);
+                result.forEach(element => {
+                    console.log("parameter", element);
+                });
+                return result;
+            },
+            query_levelParameter() {
+                let result = this.api_info.api_request_parameters_candidate.filter((value) => {
+                    return value.level === 1;
+                })
+                console.log("query_levelParameter", result);
+                return result;
+            },
+            filter_levelParameter() {
+                return this.api_info.api_request_parameters_candidate.filter((value) => {
+                    return value.level === 2;
+                })
+            },
+        },
+        watch: {
+            api_info: function () {
+                console.log("json_link",this.api_info.json_link)
+                $.get(this.api_info.json_link)
+                    .done((result) => {
+                        console.log("json_example",result);
+                        this.json_example = result;
+                    })
+                    .fail((re, me) => {
+                        console.log("Get example json fail", re, me);
+                    })
+            }
+        },
+        created() {
+            this.load_list();
+        }
+    })
+</script>
+
+</html>

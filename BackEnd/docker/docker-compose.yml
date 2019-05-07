@@ -1,0 +1,37 @@
+version: '3'
+services:
+  nginx:
+    image: nginx:alpine
+    restart: on-failure
+    links:
+      - service-call:ser_container
+    ports:
+      - 8089:8089
+    volumes:
+      - /var/log/nginx_d:/var/log/nginx
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - /var/www/:/var/www/:ro
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - service-call
+
+  mongodb:
+    image: mongo:latest
+    restart: on-failure
+    ports:
+      - 27017:27017
+    volumes:
+      - /data/db/:/data/db/
+      - /var/log/mongodb_d/:/var/log/mongodb/
+
+  service-call:
+    build: ../
+    restart: on-failure
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    links:
+      - mongodb:mongo_container
+    environment:
+      - MONGO_HOST=mongo_container
+    depends_on:
+      - mongodb

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>正文及结果项选择</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta http-equiv="Access-Control-Allow-Origin" content="*"/>
+    <link href="css/common.css" type="text/css" rel="stylesheet"/>
+    <link href="css/base_680b3b8.css" type="text/css" rel="stylesheet"/>
+
+    <script src="js/jquery-3.2.1(2).js"></script>
+    <!--bootstrap-->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <!--VUE-->
+    <script src="js/vue.js"></script>
+</head>
+<body class="bg-White" style="min-width: 1280px;opacity: 0.9;background: #F4F4F4;">
+<div class="new-index-title">
+    <div style="width:1080px;margin:0 auto;" class="pr">
+        <div class="clearfix pr">
+            <div class="topstyle">
+                <ul id="tips">
+                </ul>
+                <ul style="float: right" id="buttons">
+                </ul>
+            </div>
+            <div class="clearfix"></div>
+            <a class="new-header-logo fl" href="index.html"></a>
+        </div>
+    </div>
+</div>
+<section class="wrap2" style="width:1031px">
+    <div class="card zl clearfix " style="padding-left: 70px;padding-right: 70px;">
+        <div id="app">
+            <h3>网页分块图</h3>
+            <div width="75%" align="center" style="padding-top: 20px">
+                <img :src="api_info.img_link" width="100%">
+            </div>
+            <h3 style="padding-top: 80px">当前选择主题块：</h3>
+            <form style="padding-top: 20px">
+                <select v-model="api_info.main_sec_id" class="custom-select">
+                    <option v-for="(item,index) in api_info.candidate" :value="index">{{index+1}}</option>
+                </select>
+            </form>
+            <div style="height: 200px;border: 1px solid #ddd;overflow: scroll;padding-top: 20px">
+                <pre id="content">{{api_info.sections[api_info.main_sec_id]}}</pre>
+            </div>
+            <form>
+                <button @click="next" type="button" style="margin-top: 16px;" class="btn btn-primary">点击继续</button>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+<script type="module">
+    new Vue({
+        el: "#app",
+        data: {
+            api_info: {
+                api_name: "",
+                api_description: "",
+                api_url: "",
+                img_link: "",
+                json_link: "",
+                api_crawl_rules_link: "",//link address
+                main_sec_id: 1,
+                sections: [
+                    "111", "222",
+                ],
+                candidate: [
+                    [
+                        {
+                            id: 0,
+                            name: "text_1/link_1/img_1",//参数名
+                            description: "default",  //参数解释
+                            type: "text/link/img",
+                            example: "",   //示例值
+                            select: "1/0"  //是否选择此值
+                        }
+                    ]
+                ]
+            }
+        },
+        methods: {
+            next() {
+                localStorage.setItem("api_info", JSON.stringify(this.api_info))
+                window.location.href = "wrap.html"
+            }
+        },
+        created() {
+            this.api_info = JSON.parse(localStorage.getItem("api_info"))
+        }
+    })
+</script>
+</html>

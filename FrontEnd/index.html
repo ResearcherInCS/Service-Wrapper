@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Access-Control-Allow-Origin" content="*"/>
+    <title>网页分析</title>
+    <link href="css/common.css" type="text/css" rel="stylesheet"/>
+    <link href="css/base_680b3b8.css" type="text/css" rel="stylesheet"/>
+    <script src="js/jquery-3.2.1(2).js"></script>
+    <script src="js/serviceWrapper.js" type="module"></script>
+    <!--bootstrap开始-->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+</head>
+<body class="bg-White" style="min-width: 1280px;opacity: 0.9;background: #F4F4F4;">
+<section class="wrap2" style="width:1031px">
+    <div class="card zl clearfix " style="padding-left: 70px;padding-right: 70px;">
+        <h3 class="title1">源URL</h3>
+        <form>
+            <div class="form-group">
+                <label for="exampleInputEmail1">请输入服务所在的网址</label>
+                <input id="url_text" type="text" style="display: block" class="form-control" id="exampleInputEmail1"
+                       value="http://www.ceic.ac.cn/speedsearch?time=7">
+            </div>
+            <div style="display: inline;">
+                <button id="dynamicWrap" type="button" class="btn btn-primary">点击包装</button>
+            </div>
+        </form>
+        <div style="height:40px"></div>
+        <h3 class="title1" id="logs">解析日志</h3>
+
+        <div class="box1" id="logText"
+             style="height: 200px;border: 1px solid #ddd;overflow: scroll"><p id="logResult" class="text-left"></p>
+        </div>
+        <form>
+            <button id="nextBtn" type="button" style="margin-top: 16px;display: none" class="btn btn-primary">点击继续
+            </button>
+        </form>
+    </div>
+</section>
+</body>
+</html>

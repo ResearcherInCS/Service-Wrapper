@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<!--[if lt IE 9]><html class="ie"><![endif]-->
+<html class="expanded" lang="zh">
+	<head>
+		<meta charset="UTF-8">
+		<!--[if IE]>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<![endif]-->
+		<title id="title">海冰预警查询</title>
+		<meta name="keywords" content="海冰预警查询_基本描述，海冰预警查询API服务，海冰预警查询API接口，海冰预警查询_API，海冰预警查询_全部评论" />
+		<meta name="description" content="API服务获取海冰预警情况。 付费版本每天更新海冰预警库，免费版本每个星期更新海冰预警库库。" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="-site-verification" content="rUUhM5fu05" />
+
+		<link rel="stylesheet" type="text/css" href="css/base_680b3b8.css" />
+		<link rel="stylesheet" type="text/css" href="css/style_fc1964e.css" />
+		<link rel="stylesheet" type="text/css" href="css/jquery.autocomplete_ea49a9e.css" />
+		<link rel="stylesheet" type="text/css" href="css/header_5bd59f1.css" />
+		<link rel="stylesheet" type="text/css" href="css/style_621c869.css" />
+		<link rel="stylesheet" type="text/css" href="css/httpproxy_05c4a3c.css" />
+		<link rel="stylesheet" type="text/css" href="css/serviceDetail_3e872b2.css" />
+		<link rel="stylesheet" type="text/css" href="css/codemirror_8273f46.css" />
+		<link rel="stylesheet" type="text/css" href="css/neat_cd796c8.css" />
+		<link rel="stylesheet" type="text/css" href="css/foldgutter_aa37a25.css" />
+		<link rel="stylesheet" type="text/css" href="css/footer_30fe45c.css" />
+		<script src="js/jquery-3.2.1(2).js" ></script>
+	</head>
+
+	<style>
+		body{
+			font-family: PingFangSC-Semibold;
+			font-size: 15px;
+			letter-spacing: 0;
+		}
+		.service-navi-list
+		{
+			background: #FFFFFF;
+			box-shadow: 0 7px 18px 0 rgba(189,187,187,0.50);
+			width:1098px;
+			height:70px;
+		}
+		.service-navi-list li
+		{
+			background: white;
+			width:130px;
+			height:70px;
+			font-family: PingFangSC-Semibold;
+			font-size: 17px;
+			color: black;
+			letter-spacing: 0;
+		}
+		.service-navi-list li.active
+		{
+			background: #0F7BD4;
+			color:white;
+		}
+		.detail-menu
+		{
+			margin-top: 22px!important;
+		}
+		.service-cont-list
+		{
+			background: #FFFFFF;
+			box-shadow: 0 7px 18px 0 rgba(189,187,187,0.50);
+			width:1098px;
+		}
+		.api-record
+		{
+			background: #FFFFFF;
+			box-shadow: 0 7px 18px 0 rgba(189,187,187,0.50);
+			border-radius: 5px;
+			width:1098px;
+			height:530px;
+			margin-bottom: 20px;
+		}
+		#lean_overlay {
+			position: fixed;
+			z-index: 100;
+			top: 0px;
+			left: 0px;
+			height: 100%;
+			width: 100%;
+			background: #000;
+			display: none;
+		}
+		
+		#w {
+			display: block;
+			width: 750px;
+			margin: 0 auto;
+			padding-top: 30px;
+		}
+		
+		#content {
+			display: block;
+			width: 100%;
+			background: #fff;
+			padding: 25px 20px;
+			padding-bottom: 35px;
+			-webkit-box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 2px 0px;
+			-moz-box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 2px 0px;
+			box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 2px 0px;
+		}
+		/** custom login button **/
+		
+		.flatbtn-blu {
+			-webkit-box-sizing: border-box;
+			-moz-box-sizing: border-box;
+			box-sizing: border-box;
+			display: inline-block;
+			outline: 0;
+			border: 0;
+			color: #edf4f9;
+			text-decoration: none;
+			background: #0F7BD4;
+			border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+			font-size: 1.3em;
+			padding: 12px 26px 12px 26px;
+			line-height: normal;
+			text-align: center;
+			vertical-align: middle;
+			cursor: pointer;
+			text-transform: uppercase;
+			text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+			-webkit-border-radius: 3px;
+			-moz-border-radius: 3px;
+			border-radius: 3px;
+			-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+			-moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+			box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+			font-family: PingFangSC-Semibold;
+			font-size: 20px;
+			color: #FFFFFF;
+			letter-spacing: 0;
+		}
+		
+		.flatbtn-blu:hover {
+			color: #fff;
+			background-color: #519dde;
+		}
+		
+		.flatbtn-blu:active {
+			-webkit-box-shadow: inset 0 1px 5px rgba(0, 0, 0, 0.1);
+			-moz-box-shadow: inset 0 1px 5px rgba(0, 0, 0, 0.1);
+			box-shadow: inset 0 1px 5px rgba(0, 0, 0, 0.1);
+		}
+		/** modal window styles **/
+		
+		#lean_overlay {
+			position: fixed;
+			z-index: 100;
+			top: 0px;
+			left: 0px;
+			height: 100%;
+			width: 100%;
+			background: #000;
+			display: none;
+		}
+		
+		#loginmodal {
+			width: 300px;
+			padding: 15px 20px;
+			background:  #FFFFFF;
+			-webkit-border-radius: 6px;
+			-moz-border-radius: 6px;
+			border-radius: 6px;
+			-webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+			-moz-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+			box-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+		}
+
+		#loginform {
+			/* no default styles */
+		}
+		
+		#loginform label {
+			display: block;
+			font-size: 1.1em;
+			font-weight: bold;
+			color: black;
+			margin-bottom: 3px;
+		}
+		
+		.txtfield {
+			display: block;
+			width: 90%!important;
+			padding: 6px 5px;
+			margin-bottom: 15px;
+			font-family: 'Helvetica Neue', Helvetica, Verdana, sans-serif;
+			color: black;
+			font-size: 16px;
+			border: 1px solid #B9B9B9;
+			border-radius: 5px;
+			height: 35px;
+		}
+		
+		.txtfield:focus {
+			outline: none;
+			color: #525864;
+			border-color: #84c0ee;
+			-webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15), 0 0 7px #96c7ec;
+			-moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15), 0 0 7px #96c7ec;
+			box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15), 0 0 7px #96c7ec;
+		}
+		
+		.star {
+			display: inline-block;
+			background: url(../images/star.png) no-repeat;
+			background-position: 0px -8px 0px 0 px;
+			width: 16px;
+			height: 16px;
+			margin-right: 4px;
+		}
+		h2
+		{
+			font-family: PingFangSC-Semibold;
+			font-size: 25px;
+			color: #242536;
+			letter-spacing: 0;
+			font-weight: normal;color:black;
+			padding-left: 20px;
+		}
+	</style>
+
+	<body style="min-width: 1280px;opacity: 0.9;background: #F4F4F4;">
+		<header id="js-header" data-token="45ced6e913ab4e80f388fec35285e189" data-api-key="" data-user-ctime="" data-verify="" data-alert="">
+				<div class="new-index-title" >
+				<div style="width:1080px;margin:0 auto" class="pr">
+					<div class="clearfix pr">
+						<div class="topstyle">
+							<ul id="tips">
+							</ul>
+							<ul style="float: right" id="buttons">
+							</ul>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+				</div>
+			</div>
+
+		</header>
+		<section class="pr" style="z-index: 1;">
+
+			<div id="wrapper" class="main clearfix">
+				<div class="breadcrumb">
+					<a href="APIMarket.html"><img src="images/index.png"/>服务中心</a>
+					<span class="tip-gt ml5 mr5">&gt;</span>
+					<a id="categoryName" style="cursor:pointer;">已包装服务</a>
+					<span class="tip-gt ml5 mr5">&gt;</span>
+					<span id="serviceName" class="tip-gt ml5 mr5"></span>
+				</div>
+				<section id="js-service-detail" class="service-detail" data="2422" data-shop="1294">
+					<div class="service-header api-record clearfix">
+						<style>
+							.photo
+							{
+								height:430px;
+							}
+							.photo img
+							{
+								height: 100%;
+								width:  100%;
+								border-radius: 5px 5px 0 0;
+							}
+							h5
+							{
+								font-size: 15px!important;
+								text-align: center;
+							}
+							.infor
+							{
+								width:430px;
+								height: 100%;
+								margin: 20px;
+								position: relative;
+								float:left;
+							}
+							.pleft
+							{
+								width: 40%;
+								float: left;
+								margin:20px 0px;
+								font-size: 17px;
+							}
+							.pleft ul
+							{
+								margin-bottom: 20px;
+
+							}
+							.pright{
+								float:right;
+								font-size: 20px;
+								/*width:60%;*/
+							}
+							.pright label
+							{
+								margin-top: 15px;
+                                display: block;
+
+							}
+                            .information{
+                                position: relative;
+                            }
+						</style>
+						<div class="infor">
+							<div class="photo"><img id="detail-img" alt="服务图片"></div>
+							<div class="pleft">
+
+
+							</div>
+							<div class="pright">
+
+							</div>
+
+
+						</div>
+                        <div class="api-right-desc fl">
+                            <div class="record-name-version clearfix">
+                                <span id="service-title" class="fl service-title text-overflow-fix" title="海冰预警查询" data-service-name="海冰预警查询"></span>
+                            </div>
+                            <div class="record-info clearfix">
+                            </div>
+                            <div class="record-info clearfix ">
+                                <div class="fl">
+                                    <span class="record-key">服务类别：    </span>
+                                    <span class="record-value" id="categoryclass"></span>
+                                </div>
+
+                            </div>
+                            <div class="record-info apiworks clearfix">
+                                <div class="fl">
+                                    <span class="record-key">提供者：   </span>
+                                    <span class="record-value"><a id="pm-login-apikey"data-login></a></span>
+                                </div>
+                            </div>
+                            <div class="record-info apiworks clearfix">
+                            <div class="fl" >
+                                <span class="record-key">服务简介：   </span>
+                                <span class="record-value" id="introduction"></span>
+                            </div></div>
+                            <div class="fl" style="margin-top: 10px;" >
+                                <span class="record-key">详细介绍：   </span>
+                                <span id="service-intro" class="record-value intro"></span>
+                            </div>
+                        </div>
+
+					</div>
+
+					<ul id="js-service-navi-list" class="service-navi-list tc clearfix">
+						<li id="api-tag" class="service-navi-item js-navi-item fl active" data-navi-item="1">
+							<div class="dib detail-menu">服务详情</div>
+						</li>
+						<li id="api-detail-error" class="service-navi-item js-navi-item fl" data-navi-item="3">
+							<div class="dib detail-menu">错误码参照</div>
+						</li>
+					</ul>
+					<script>
+						//自己写的
+						$(".service-navi-item").click(
+							function() {
+								var tid = $(this).attr("data-navi-item");
+								$(".service-navi-item").removeClass("active");
+								$(this).addClass("active");
+								$(".service-cont-item").addClass("dn");
+								$(".service-cont-item[data-item-content='" + tid + "']").removeClass("dn");
+								if(tid == 1)
+									$("#IPC").click();
+								else if(tid == 7)
+									$("#tsgn").click();
+							}
+						);
+					</script>
+					<div id="js-service-cont-list" class="service-cont-list">
+						<div class="service-cont-item js-service-cont-item " data-item-content="1">
+							<section class="clearfix">
+								<nav class="api-aside fl">
+									<ul class="navi-list" id="optionUl">
+									</ul>
+								</nav>
+								<dl id="js-interface-list" class="interface-list fl">
+									<dt class="interface-item">
+								</dl>
+							</section>
+						</div>
+						<div class="service-cont-item js-service-cont-item dn" data-item-content="3">
+							<dl id="js-interface-list" class="interface-list table">
+								<!--<span class=" err-name mb10">常用错误码：</span>-->
+								<table class="err-table">
+									<thead>
+										<tr>
+											<th class="record-col-15">错误码</th>
+											<th class="record-col-45">错误码说明</th>
+										</tr>
+									</thead>
+									<tbody id="errorBoddy" ></tbody>
+								</table>
+							</dl>
+						</div>
+						<div class="service-cont-item js-service-cont-item dn" data-item-content="4">
+							<dl class="interface-list table">
+								<table class="mt10">
+									<thead>
+										<tr>
+											<th width="20%">所属类别</th>
+											<th width="20%" class="col-2">简介</th>
+											<th width="20%" class="col-2">创建时间</th>
+											<th width="20%" class="col-2">文件名</th>
+											<th width="20%" class="col-2">URL</th>
+										</tr>
+									</thead>
+									<tbody id="js-order-list-table"></tbody>
+								</table>
+								<div id="js-order-pager" class="pager js-pager"></div>
+							</dl>
+						</div>
+					</div>
+				</section>
+			</div>
+			<footer>
+				&nbsp;
+			</footer>
+		</section>
+	</body>
+	<script src="js/api/utils.js"></script>
+	<script src="js/ajax.js"></script>
+</html>

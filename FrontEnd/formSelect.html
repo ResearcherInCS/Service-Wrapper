@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Access-Control-Allow-Origin" content="*"/>
+    <title>表单选择</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta http-equiv="Access-Control-Allow-Origin" content="*"/>
+    <link href="css/common.css" type="text/css" rel="stylesheet"/>
+    <link href="css/base_680b3b8.css" type="text/css" rel="stylesheet"/>
+
+    <script src="js/jquery-3.2.1(2).js"></script>
+    <!--bootstrap-->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <!--VUE-->
+    <script src="js/vue.js"></script>
+</head>
+<body class="bg-White" style="min-width: 1280px;opacity: 0.9;background: #F4F4F4;">
+<div class="new-index-title">
+    <div style="width:1080px;margin:0 auto;" class="pr">
+        <div class="clearfix pr">
+            <div class="topstyle">
+                <ul id="tips">
+                </ul>
+                <ul style="float: right" id="buttons">
+                </ul>
+            </div>
+            <div class="clearfix"></div>
+            <a class="new-header-logo fl" href="index.html"></a>
+        </div>
+    </div>
+</div>
+<section class="wrap2" style="width:1031px">
+    <div class="card zl clearfix " style="padding-left: 70px;padding-right: 70px;">
+        <div id="app">
+            <form style="padding-top: 20px" @submit.prevent="next()">
+                <h3>表单分块图</h3>
+                <div width="75%" align="center" style="padding-top: 20px">
+                    <img :src="img_link" width="100%">
+                </div>
+                <h3 style="padding-top: 80px">选择表单：</h3>
+                <select v-model="form_info.main_form_index" class="custom-select">
+                    <option v-for="(item,index) in form_info.forms" :value="index">{{index+1}}</option>
+                </select>
+                <h3 style="text-align: center;margin-top:20px">自定义输入参数</h3>
+                <div style="text-align: center">
+                    <table class="table" style="margin: 0 auto ;margin-top:15px;width:93%;">
+                        <thead>
+                        <tr>
+                            <th scope="col" style="text-align: left">输入框编号</th>
+                            <th scope="col" style="text-align: left">名称</th>
+                            <th scope="col" style="text-align: left">类型</th>
+                            <th scope="col" style="text-align: left">示例值</th>
+                            <th scope="col" style="text-align: left">描述</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <template v-for="field in form_info.forms[form_info.main_form_index].input_list">
+                            <tr>
+                                <th scope="row" style="text-align: center">{{field.index}}</th>
+                                <td><input type="text" v-model="field.query_name" class="form-control"></td>
+                                <td>{{field.type}}</td>
+                                <td><input type="text" v-model="field.value" class="form-control"
+                                           :required="field.required" :placeholder="field.required?'必须填写该项值':''"></td>
+                                <td><input type="text" v-model="field.description" placeholder="包括类型、范围等"
+                                           class="form-control"></td>
+                            </tr>
+                        </template>
+                        </tbody>
+                    </table>
+
+                </div>
+                <h3 style="padding-top: 80px">选择提交按钮：</h3>
+
+                <select v-model="form_info.forms[form_info.main_form_index].main_btn_index" class="custom-select">
+                    <option v-for="(item,index) in form_info.forms[form_info.main_form_index].submit_button_list"
+                            :value="index">{{item.index}}
+                    </option>
+                </select>
+                <button type="submit" style="margin-top: 16px;" class="btn btn-primary">点击包装</button>
+
+            </form>
+            <div v-if="showLog">
+                <div style="height:40px"></div>
+                <h3 class="title1" id="logMsg">{{logMsg}}</h3>
+                <div class="box1"
+                     style="height: 200px;border: 1px solid #ddd;overflow: scroll" id="logBox">
+                    <pre id="logText" class="text-left">{{logText}}</pre>
+                </div>
+            </div>
+            <button @click="jump2Package" type="button" style="margin-top: 16px;" class="btn btn-primary"
+                    v-if="showJump2PackageBtn">点击继续
+            </button>
+        </div>
+    </div>
+</section>
+</body>
+<script type="module">
+    let logTask
+    import {server} from "./js/config.js"
+
+    new Vue({
+        el: "#app",
+        data: {
+            showJump2PackageBtn: false,
+            time: 60,
+            logMsg: "",
+            logText: "",
+            showLog: false,
+            img_link: "",
+            form_info: {
+                url: "",
+                form_check: 0,
+                main_form_index: 0,
+                forms: [
+                    {
+                        "main_btn_index": 0,
+                        "css_selector": "html > body:nth-child(2) > div > div:nth-child(3) > div > div > div:nth-child(2) > form",
+                        "id": 0,
+                        "len": 11,
+                        "input_list": [
+                            {
+                                "id": 0,
+                                "type": "text",
+                                "name": "start",
+                                "required": false,
+                                "css_selector": "html > body:nth-child(2) > div > div:nth-child(3) > div > div > div:nth-child(2) > form > div > input:nth-child(2)",
+                                "value": "",
+                                "query_name": "start",
+                                "description": ""
+                            },
+                        ],
+                        "submit_button_list": [{
+                            "css_selector": "html > body:nth-child(2) > div > div:nth-child(3) > div > div > div:nth-child(2) > form > div:nth-child(5) > a:nth-child(4)",
+                            "index": "b1",
+                            "id": 0,
+                            "type": "a"
+                        }],
+                    }
+                ]
+            }
+        },
+        methods: {
+            next() {
+                this.logMsg = "正在提交信息"
+                this.form_info.form_check = 1
+                console.log("post data", JSON.stringify(this.form_info))
+                $.ajax({
+                        url: server + "servicewrapper",
+                        type: "POST",
+                        data: JSON.stringify(this.form_info),
+                        contentType: "application/json; charset=utf-8",
+                        //dataType:"json",写上这行则服务器必须返回JSON，否则触发error function
+                        success: (result) => {
+                            console.log("post API success", result)
+                            this.showLog = true
+                            this.updateLog(result)
+                        }
+                    }
+                )
+                return true
+            },
+            updateLog(logUrl) {
+                logTask = setInterval(() => {
+                    $.get(logUrl)
+                        .done((logResult) => {
+                            this.time = this.time - 1
+                            this.logText = logResult
+                            document.getElementById("logBox").scrollTop = $("#logText")[0].scrollHeight //始终保持日志滚动条在最下方
+                            let logArray = logResult.split("\n")
+                            logArray.pop()
+                            if (logArray.length <= 1)
+                                this.logMsg = "爬取结果中： 爬取页面最长剩余时间：" + this.time + "s"
+                            else
+                                this.logMsg = "爬取结果中：请等待解析完毕"
+                            let lastLine = logArray.pop()
+                            console.log("lastLine", lastLine)
+                            if (lastLine.startsWith("200")) {//分析结束
+                                clearInterval(logTask)//停止请求日志
+                                let jsonUrl = lastLine.split(" ").pop()
+                                $.get(jsonUrl).done((result) => {//获取API信息
+                                    localStorage.setItem("api_info", JSON.stringify(result))
+                                    this.showJump2PackageBtn = true
+                                    this.logMsg = "解析日志"
+                                })
+
+                            }
+                            else if (lastLine.startsWith("503") || lastLine.startsWith("504") || (this.time <= 0 && logArray.length <= 1)) {
+                                this.logMsg = "解析日志 包装失败，请重新点击按钮包装！"
+                                clearInterval(logTask)
+                            }
+                        })
+                        .fail((errorResult) => {
+                            this.logMsg = "获取日志发生错误"
+                            console.log("获取日志错误", errorResult)
+                            this.logMsg = "解析日志失败，请重新包装"
+                        })
+                }, 1000)
+            },
+            jump2Package() {
+                window.location.href = "mainTextSelect.html"
+            }
+        },
+        created() {
+            this.form_info = JSON.parse(localStorage.getItem("form_info"))
+            this.img_link = localStorage.getItem("img_url")
+            console.log("form_info", this.form_info)
+        }
+    })
+</script>
+</html>
