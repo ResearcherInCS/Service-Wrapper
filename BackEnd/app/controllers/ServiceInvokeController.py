@@ -369,10 +369,10 @@ def url_construct(api_id):
 
     api_crawl_rules_link = service.api_crawl_rules_link
     form_rules_link = service.form_rules_link
-    api_parameters = []
-    for sec_id in service.main_sec_id:
-        api_parameters =  api_parameters + service.candidate[sec_id]["items"]
+
     api_url = service.api_url
+
+    static_exp_link = service.static_exp_link
 
     candidate_parameters = service.api_request_parameters_candidate # 可以使用的参数集合
     candidate_parameters = [candidate_parameter["query_name"] for candidate_parameter in candidate_parameters]
@@ -388,17 +388,25 @@ def url_construct(api_id):
     request_parameters = [i for i in request_parameters_ori if i in candidate_parameters]
     ret_cha = [".".join(i) for i in request_parameters_ori if i not in candidate_parameters]
 
-    try:
-        # api_parameters.sort(key=lambda k: k["id"])
-        api_crawl_rules = []
+    api_parameters_double_list = []
+    api_parameters = []
+    section_name = []
+    for sec_id in service.main_sec_id:
+        api_parameters = api_parameters + service.candidate[sec_id]["items"]
+        api_parameters_double_list.append(service.candidate[sec_id]["items"])
+        section_name.append(service.candidate[sec_id]["section_name"])
 
-        form_rules_link_ex = api_crawl_rules_link.split('/statics/', 1)[1]
-        strss = read_file_as_str("static/" + form_rules_link_ex)
-        api_crawl_rules_two = json.loads(strss)
-        for sec_id in service.main_sec_id:
-            api_crawl_rules = api_crawl_rules + api_crawl_rules_two[sec_id]
+    # api_parameters.sort(key=lambda k: k["id"])
+    api_crawl_rules_double_list = []
+    try:
+        if api_crawl_rules_link:
+            api_crawl_rules_two = requests.get(api_crawl_rules_link).json()
+            for sec_id in service.main_sec_id:
+                api_crawl_rules_double_list.append(api_crawl_rules_two[sec_id])
+
     except:
         return ReNum.REQUEST_ERROR.value()
+
     if api_crawl_rules_link and api_parameters:
         try:
             crawl = Crawler(app.logger)
@@ -427,8 +435,8 @@ def url_construct(api_id):
 
             # crawl.genNewRecord()
             # Wait条件
-            if len(api_crawl_rules) > 0:
-                wait_rule = api_crawl_rules[0]
+            if len(api_crawl_rules_double_list) > 0:
+                wait_rule = api_crawl_rules_double_list[0][0]
                 wait_images = wait_rule["images"]
                 wait_texts = wait_rule["texts"]
                 wait_links = wait_rule["links"]
@@ -473,75 +481,81 @@ def url_construct(api_id):
                 if cram_click_next_page:
                     page_pyquery = crawl.page  ## 页面page
 
-                    for rule in api_crawl_rules:
-                        images = rule["images"]
-                        texts = rule["texts"]
-                        links = rule["links"]
+                    for indexxx in range(len(api_crawl_rules_double_list)):
+                        api_crawl_rules = api_crawl_rules_double_list[indexxx]
+                        api_parameters = api_parameters_double_list[indexxx]
+                        result_one = []
+                        for rule in api_crawl_rules:
+                            images = rule["images"]
+                            texts = rule["texts"]
+                            links = rule["links"]
 
-                        result = {"record_id": rule["record_id"]}
-                        for image in images:
-                            if crawl.iframe_ex and image["css_selector"].find('>f>')>=0:
-                                image["css_selector"] = image["css_selector"].split(">f>")[1]
-                            if not page_pyquery(image["css_selector"]) or len(page_pyquery(image["css_selector"])) == 0:
-                                continue
-
-                            if not crawl.css_selc:
-                                crawl.css_selc = image["css_selector"]
-
-                            res_value, parameter = image_filter(image, page_pyquery, api_parameters, api_url, crawl)
-                            if parameter["select"] == 1:
-                                result[parameter["name"]] = res_value
-
-                        for text in texts:
-                            if crawl.iframe_ex and text["css_selector"].find('>f>')>=0:
-                                text["css_selector"] = text["css_selector"].split(">f>")[1]
-                            if not page_pyquery(text["css_selector"]) or len(page_pyquery(text["css_selector"])) == 0:
-                                continue
-                            if not crawl.css_selc:
-                                crawl.css_selc = text["css_selector"]
-                            text_value, parameter = text_filter(text, page_pyquery, api_parameters)
-
-                            if parameter["select"] == 1:
-                                result[parameter["name"]] = text_value
-
-                        for link in links:
-                            if crawl.iframe_ex and link["css_selector"].find('>f>')>=0:
-                                link["css_selector"] = link["css_selector"].split(">f>")[1]
-                            if not page_pyquery(link["css_selector"]) or len(page_pyquery(link["css_selector"])) == 0:
-                                continue
-                            if not crawl.css_selc:
-                                crawl.css_selc = link["css_selector"]
-                            css_link_result = pq(page_pyquery(link["css_selector"])[0])
-                            id = link["id"]
-                            link_images = link["images"]
-                            link_texts = link["texts"]
-
-                            parameter = api_parameters[id]
-                            result[parameter["name"]] = {}
-
-                            for link_image in link_images:
-                                if crawl.iframe_ex and link_image["css_selector"].find('>f>')>=0:
-                                    link_image["css_selector"] = link_image["css_selector"].split(">f>")[1]
-                                if not page_pyquery(link_image["css_selector"]) or len(page_pyquery(link_image["css_selector"])) == 0:
+                            result = {"record_id": rule["record_id"]}
+                            for image in images:
+                                if crawl.iframe_ex and image["css_selector"].find('>f>')>=0:
+                                    image["css_selector"] = image["css_selector"].split(">f>")[1]
+                                if not page_pyquery(image["css_selector"]) or len(page_pyquery(image["css_selector"])) == 0:
                                     continue
-                                link_image_res_value, link_image_parameter = image_filter(link_image, page_pyquery, api_parameters, api_url,crawl)
-                                if link_image_parameter["select"] == 1:
-                                    result[parameter["name"]][link_image_parameter["name"]] = link_image_res_value
-                            for link_text in link_texts:
-                                if crawl.iframe_ex and link_text["css_selector"].find('>f>')>=0:
-                                    link_text["css_selector"] = link_text["css_selector"].split(">f>")[1]
-                                if not page_pyquery(link_text["css_selector"]) or len(page_pyquery(link_text["css_selector"])) == 0:
-                                    continue
-                                link_text_value, link_parameter = text_filter(link_text, page_pyquery, api_parameters)
-                                if link_parameter["select"] == 1:
-                                    result[parameter["name"]][link_parameter["name"]] = link_text_value
-                            if parameter["select"] == 1:
-                                if css_link_result.attr("href").startswith("http"):
-                                    result[parameter["name"]]["href"] = css_link_result.attr('href')
-                                else:
-                                    result[parameter["name"]]["href"] = urljoin(api_url, "/" + css_link_result.attr('href'))
 
-                        results.append(result)
+                                if not crawl.css_selc:
+                                    crawl.css_selc = image["css_selector"]
+
+                                res_value, parameter = image_filter(image, page_pyquery, api_parameters, api_url, crawl)
+                                if parameter["select"] == 1:
+                                    result[parameter["name"]] = res_value
+
+                            for text in texts:
+                                if crawl.iframe_ex and text["css_selector"].find('>f>')>=0:
+                                    text["css_selector"] = text["css_selector"].split(">f>")[1]
+                                if not page_pyquery(text["css_selector"]) or len(page_pyquery(text["css_selector"])) == 0:
+                                    continue
+                                if not crawl.css_selc:
+                                    crawl.css_selc = text["css_selector"]
+                                text_value, parameter = text_filter(text, page_pyquery, api_parameters)
+
+                                if parameter["select"] == 1:
+                                    result[parameter["name"]] = text_value
+
+                            for link in links:
+                                if crawl.iframe_ex and link["css_selector"].find('>f>')>=0:
+                                    link["css_selector"] = link["css_selector"].split(">f>")[1]
+                                if not page_pyquery(link["css_selector"]) or len(page_pyquery(link["css_selector"])) == 0:
+                                    continue
+                                if not crawl.css_selc:
+                                    crawl.css_selc = link["css_selector"]
+                                css_link_result = pq(page_pyquery(link["css_selector"])[0])
+                                id = link["id"]
+                                link_images = link["images"]
+                                link_texts = link["texts"]
+
+                                parameter = api_parameters[id]
+                                result[parameter["name"]] = {}
+
+                                for link_image in link_images:
+                                    if crawl.iframe_ex and link_image["css_selector"].find('>f>')>=0:
+                                        link_image["css_selector"] = link_image["css_selector"].split(">f>")[1]
+                                    if not page_pyquery(link_image["css_selector"]) or len(page_pyquery(link_image["css_selector"])) == 0:
+                                        continue
+                                    link_image_res_value, link_image_parameter = image_filter(link_image, page_pyquery, api_parameters, api_url,crawl)
+                                    if link_image_parameter["select"] == 1:
+                                        result[parameter["name"]][link_image_parameter["name"]] = link_image_res_value
+                                for link_text in link_texts:
+                                    if crawl.iframe_ex and link_text["css_selector"].find('>f>')>=0:
+                                        link_text["css_selector"] = link_text["css_selector"].split(">f>")[1]
+                                    if not page_pyquery(link_text["css_selector"]) or len(page_pyquery(link_text["css_selector"])) == 0:
+                                        continue
+                                    link_text_value, link_parameter = text_filter(link_text, page_pyquery, api_parameters)
+                                    if link_parameter["select"] == 1:
+                                        result[parameter["name"]][link_parameter["name"]] = link_text_value
+                                if parameter["select"] == 1:
+                                    if css_link_result.attr("href").startswith("http"):
+                                        result[parameter["name"]]["href"] = css_link_result.attr('href')
+                                    else:
+                                        result[parameter["name"]]["href"] = urljoin(api_url, "/" + css_link_result.attr('href'))
+                            result_one.append(result)
+                        result_double = {"section_name": section_name[indexxx]}
+                        result_double["result"] = result_one
+                        results.append(result_double)
                 else:
                     if data_error:
                         message_error_return.append(data_error)
@@ -563,22 +577,27 @@ def url_construct(api_id):
 
         new_result = []
         if len(results)>0:
-            result_demo = results[0]
+            for result_one in results:
+                new_result_one = []
+                result_demo = result_one["result"][0]
+                section_name = result_one["section_name"]
+                parameters_unions, cha_set = select_result_parameter(request_parameters, result_demo)  # 请求参数和返回参数中求and的结果
 
-            parameters_unions, cha_set = select_result_parameter(request_parameters, result_demo)  # 请求参数和返回参数中求and的结果
+                cha_set = cha_set + ret_cha
+                for result in result_one["result"]:
+                    __Flag = True
+                    for parameters_union in parameters_unions:
+                        _lik_val = "."
+                        __request_value = request.args.get(_lik_val.join(parameters_union))
 
-            cha_set = cha_set + ret_cha
-            for result in results:
-                __Flag = True
-                for parameters_union in parameters_unions:
-                    _lik_val = "."
-                    __request_value = request.args.get(_lik_val.join(parameters_union))
-
-                    if not iterator_judge(parameters_union, result, __request_value) :
-                        __Flag = False
-                        break
-                if __Flag:
-                    new_result.append(result)
+                        if not iterator_judge(parameters_union, result, __request_value) :
+                            __Flag = False
+                            break
+                    if __Flag:
+                        new_result_one.append(result)
+                new_result_one_ = {"section_name": section_name}
+                new_result_one_["result"] = new_result_one
+                new_result.append(new_result_one_)
 
         current_page = crawl.current_page - 1
 
@@ -622,7 +641,7 @@ def candidate_add_query_name(candidates):
                 query_name_str = ".".join(query_name)
                 every_response_describe["query_name"] = query_name_str
     return candidates
-    
+
 def get_api_request_parameters_candidate_Level2(candidates, selects):
     api_request_parameters_candidate_level2 = []
     for select in selects:
