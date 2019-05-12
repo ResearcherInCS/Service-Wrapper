@@ -18,7 +18,6 @@ if __name__ == "__main__":
     log = common.log(filename=folder_name + "/process.log")  # 打开log
     spliter = Form(log=log)
     try:
-        a = 1/0
         # spliter.segment(url=sys.argv[1], output_folder=folder_name, is_output_images=False)
         spliter.segment(url=url, output_folder=folder_name, is_output_images=False)
         spliter.browser.quit()
