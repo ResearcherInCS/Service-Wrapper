@@ -563,7 +563,7 @@ class Segment:
         self.json_data["title"] = self.browser.title
 
     # 找到主要至多min2个的section
-    def __select_main_segment_top_min(self, min2=18):
+    def __select_main_segment_top_min(self, min2=10):
         segments = self.json_data["segments"]
         self.main_sec = None
         max_len = 0
