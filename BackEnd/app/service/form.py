@@ -50,7 +50,7 @@ class Form:
         self.soup = BeautifulSoup(self.browser.page_source, 'html.parser')  # 标准库方式载入页面源代码
         try:
             self.page_height = self.browser.find_element_by_tag_name("body").rect["height"]  # 找到body大小
-            self.browser.set_window_size(setting.SCREEN_WIDTH, 1800)  # 设置窗口大小
+            self.browser.set_window_size(setting.SCREEN_WIDTH, self.page_height)  # 设置窗口大小
         except:
             pass
         """
