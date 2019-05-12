@@ -131,7 +131,7 @@ class Crawler:
                 for child in allnodes[i].children:
                     if isinstance(child, bs4.element.Tag):  # 如果直接子节点是TAG类型，则放入children列表，即得到正文中的所有显示出的信息（去除注释及其他代码）
                         text = child.text
-                        if ("1" in text) and (("下一页" in text) or ("尾页" in text)):
+                        if ("1" in text) and (("下一页" in text) or ("next" in text) or ("last" in text) or ("尾页" in text)):
                             children.append(child)
                 sn = len(children)
 
@@ -142,7 +142,8 @@ class Crawler:
                     allnodes.append(child)  # 加入allnodes节点
                 i += 1
             next_page = allnodes[len(allnodes) - 1]
-            if ("1" in next_page.text) and (("下一页" in next_page.text) or ("尾页" in next_page.text)):
+            if ("1" in next_page.text) and (("下一页" in next_page.text) or ("尾页" in next_page.text) or ("next" in next_page.text) or (
+                    "last" in next_page.text)):
                 x = self.__get_css_selector(next_page)
                 return self.__get_css_selector(next_page)
             else:

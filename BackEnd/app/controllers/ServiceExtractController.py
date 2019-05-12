@@ -29,7 +29,7 @@ CORS(app, resources=r'/*')
 def device_get():
     if request.method == 'GET':
         if request.args.get('url'):
-            message = request.args.get('url')
+            message = request.args.get('url').replace("&", "\&")
             if request.args.get('form_check'):  # 是否检测表格
                 form_check = str(request.args.get('form_check'))
             else:
@@ -47,7 +47,7 @@ def device_get():
     elif request.method == "POST":
         # try:
         data = request.json
-        message = data['url']
+        message = data['url'].replace("&", "\&")
         form_check = str(data['form_check'])
         poke = str(int(time.time())) + str(random.randint(1, 10000))
         path = 'static/form_json/' + poke + '.json'  # 存储此json
@@ -68,7 +68,7 @@ def device_get():
 def formdetector():
     if request.method == 'GET':
         if request.args.get('url'):
-            message = request.args.get('url')
+            message = request.args.get('url').replace("&", "\&")
             poke = str(int(time.time())) + str(random.randint(1, 10000))
             command = 'python3 app/service/form_demo.py ' + message + ' ' + poke + ' &'
             os.system(command)

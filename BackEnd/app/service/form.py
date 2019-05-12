@@ -1,21 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-# Copyright 2018 Xiya Lyu
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
-
 import operator
 import time
 
@@ -26,11 +10,12 @@ from html.parser import HTMLParser
 from bs4 import BeautifulSoup
 from PIL import Image, ImageDraw, ImageFont
 from lcypytools import common
-import bs4
+import bs4, urllib
 from pyquery import PyQuery as pq
+from lcypytools.common import Timer
 
-import setting as setting
-import os
+import setting
+
 """
 1、检测页面中是否存在form，存在则让用户选择是否具有搜索筛选功能，如果是，进行筛选包装。
 2、自动检测页面中的所有form，以及form中所有的字段名字和搜索按钮位置，并让用户指定是哪个form，字段里填写什么，哪个是真正的搜索按钮，注意required。
@@ -42,16 +27,11 @@ import os
 
 class Form:
     def __init__(self, log):
-        options = webdriver.ChromeOptions()
-        if setting.PRODUCTION:
-            options.binary_location = setting.CHROME_BINARY_LOCATION_PRODUCTION
-            path = setting.DRIVER_PATH_PRODUCTION
-        else:
-            options.binary_location = setting.CHROME_BINARY_LOCATION_LOCAL
-            path = os.path.dirname(__file__) + setting.DRIVER_PATH_PRODUCTION_LOCAL  # upload 修改
+        options = Options()
+        options.binary_location = setting.CHROME_BINARY_LOCATION
         options.add_argument('--headless')  # 不显示浏览器
-        self.browser = webdriver.Chrome(chrome_options=options, executable_path=path)
-        self.browser.set_window_size(setting.SCREEN_WIDTH, 800)  # set the window size that you need
+        self.browser = webdriver.Chrome(chrome_options=options, executable_path=setting.DRIVER_PATH)
+        # self.browser.set_window_size(setting.SCREEN_WIDTH, 800)  # set the window size that you need
         self.parser = HTMLParser()
         self.log = log
 
@@ -64,11 +44,13 @@ class Form:
             self.log.write_without_datetime("503 " + "request time out,task end,please retry")
             self.browser.quit()
             exit(-1)
+        self.document_size = len(self.browser.page_source)
+        self.document_tree_length = self.browser.execute_script("return document.getElementsByTagName('*').length")
         self.page = pq(self.browser.page_source.replace('xmlns', 'another_attr'))  # pyquery
         self.soup = BeautifulSoup(self.browser.page_source, 'html.parser')  # 标准库方式载入页面源代码
         try:
             self.page_height = self.browser.find_element_by_tag_name("body").rect["height"]  # 找到body大小
-            self.browser.set_window_size(setting.SCREEN_WIDTH, self.page_height)  # 设置窗口大小
+            self.browser.set_window_size(setting.SCREEN_WIDTH, 1800)  # 设置窗口大小
         except:
             pass
         """
@@ -79,17 +61,24 @@ class Form:
     def segment(self, url, output_folder="output", is_output_images=False):
         self.url = url
         self.output_folder = self.remove_slash(output_folder)  # 去除冗余信息后得到的路径
+
+        self.time_crawl = Timer("crawl_form_page")
         self.log.write("Crawl HTML Document from %s,please wait for about 40s(max 60s)" % self.url)
         self.__crawler()  # 爬取页面
+        self.time_crawl.end()
+
+        self.time_find_form_and_generate_rules = Timer("find_form_and_generate_rules")
         self.log.write("Finding form lable on %s" % self.url)
         self.exist_form = self.__find_tag_form()  # 找到有没有form标签
+        self.time_find_form_and_generate_rules.end()
+
         self.__get_form_pic()  # 生成form的区域截图
         self.__save_form_rules()
+
         self.log.write("Finished on  %s" % self.url)
         self.log.write_without_datetime(
             "200 " + setting.SERVER_ADDRESS + self.output_folder.replace("static",
-                                                                         "statics") + "/form_list.json " + setting.SERVER_ADDRESS + self.output_folder.replace("static",
-                                                                         "statics") + "/form_seg_shot.png")
+                                                                         "statics") + "/form_list.json " + setting.SERVER_ADDRESS + self.output_folder + "/form_seg_shot.png")
 
     """
     通过下面的操作，程序得到了整个网页中所有的tag节点的信息，并按照广度优先搜索的顺序，存储到了self.allnodes列表中
@@ -101,13 +90,22 @@ class Form:
         self.handleSpecialPageBefore()  # 针对性的对页面进行包装,给页面表单信息增加form标签
         form = self.soup.find_all("form")  # 查找页面中是否存在form标签
         form_t = []
-        """
-        @TODO 注意下面这段要广度优先搜索检测iframe和frameset，暂时先不做
-        """
         iframexx = self.soup.find_all("iframe")  # 查找位于iframe中的form
         for i in range(len(form)):
-            form_t.append({"form": form[i], "type": 0})  # 普通form
-
+            form_t.append({"form": form[i], "type": 0, "css_selector": self.__get_css_selector(form[i]),"in_selector":self.__get_css_selector(form[i])})  # 普通form
+        form_f = self.soup.find_all("input")
+        for i in range(len(form_f)):
+            selector_t = self.__get_css_selector(form_f[i]) # 临时selector，判断此item有没有在其他form中出现
+            t = True
+            for f in form_t:
+                if selector_t.find(f["in_selector"])>=0:
+                    t = False
+                    break
+            if t:
+                selector = self.__get_css_selector(form_f[i], parents=2)  # 元素的上两级找起
+                form_f[i] = form_f[i].parent.parent.parent
+                form_t.append({"form": form_f[i], "type": 0,
+                               "css_selector": selector,"in_selector":selector})
         self.form_list = []
         self.form_list_json = []
         for iframe in iframexx:
@@ -118,7 +116,23 @@ class Form:
             for i in range(len(form_f)):
                 selector = self.__get_css_selector(form_f[i])
                 form_t.append({"form": form_f[i], "type": 1,
-                               "css_selector": css_selector + " >f> " + selector})
+                               "css_selector": css_selector + " >f> " + selector,"in_selector":selector})
+            form_f = iframe_soup.find_all("input")
+            for i in range(len(form_f)):
+                ctype = form_f[i].attrs["type"]
+                if (form_f[i].name=="input" and (ctype == "submit" or ctype=="button")) or form_f[i].name=="button":
+                    selector_t = self.__get_css_selector(form_f[i])  # 临时selector，判断此item有没有在其他form中出现
+                    t = True
+                    for f in form_t:
+                        if selector_t.find(f["in_selector"]) >= 0:
+                            t = False
+                            break
+                    if t:
+                        form_f[i] = form_f[i].parent.parent.parent
+                        selector = self.__get_css_selector(form_f[i], parents=2)  # 元素的上两级找起
+                        form_t.append({"form": form_f[i], "type": 1,
+                                       "css_selector": css_selector + " >f> " + selector,"in_selector":selector})
+
             self.browser.switch_to.default_content()  # 切换到默认页面
 
         for i in range(len(form_t)):
@@ -131,7 +145,11 @@ class Form:
                 css_selector = self.__get_css_selector(form_t[i]["form"])
                 slot = "return "
                 selector_slot = ""
-            exist = self.browser.execute_script(slot + 'document.querySelector("' + css_selector + '")')
+            # print(slot + 'document.querySelector("' + css_selector + '")')
+            try: # 存在iframe跨域问题则跳过
+                exist = self.browser.execute_script(slot + 'document.querySelector("' + css_selector + '")')
+            except:
+                continue
             if exist == None:
                 css_selector = css_selector.replace("> form", "")
             btn_sub = False
@@ -168,8 +186,13 @@ class Form:
                             continue  # 跳过即可
                         if exist == None:
                             css_selector_this = css_selector_this.replace("> form", "")
-                        if child.name == "input" and (child.attrs["type"] == "checkbox" or child.attrs[
-                            "type"] == "radio"):  # 对radio和checkbox单独处理
+                        # 防止没有type属性
+                        try:
+                            ctype = child.attrs["type"]
+                        except:
+                            ctype = "text"
+
+                        if child.name == "input" and (ctype == "checkbox" or ctype == "radio"):  # 对radio和checkbox单独处理
                             # if name.find("no_key_name") >= 0: # 有key才行
                             #     continue
                             try:
@@ -177,7 +200,7 @@ class Form:
                                     slot + 'document.querySelector("' + css_selector_this + '").checked')
                             except:
                                 checked = "false"
-                            input_list.append({"id": index, "type": child.attrs["type"], "name": name + "_" + value,
+                            input_list.append({"id": index, "type": ctype, "name": name + "_" + value,
                                                "required": required, "css_selector": selector_slot + css_selector_this,
                                                "value": checked, "query_name": name + "_" + value, "description": "",
                                                "index": "T" + str(index + 1),
@@ -198,18 +221,17 @@ class Form:
                             index += 1
                             continue
 
-                        if child.name == "input" and child.attrs["type"] != "hidden" and child.attrs[
-                            "type"] != "submit" and child.attrs["type"] != "button":
+                        if child.name == "input" and ctype != "hidden" and ctype!="reset" and ctype != "submit" and ctype != "button":
                             input_list.append(
-                                {"id": index, "type": child.attrs["type"], "name": name, "required": required,
+                                {"id": index, "type": ctype, "name": name, "required": required,
                                  "css_selector": selector_slot + css_selector_this, "value": value, "query_name": name,
                                  "description": "", "index": "T" + str(index + 1), "form_type": form_t[i]["type"]})
                             index += 1
                         elif child.name == "input" and (
-                                child.attrs["type"] == "submit" or child.attrs["type"] == "button"):
+                                ctype == "submit" or ctype == "button"):
                             btn_sub = True  # 存在这种类型的button就不考虑其他类型的提交按钮形式了
                             submit_button_list.append(
-                                {"id": btn_id - 1, "type": child.attrs["type"], "name": name, "required": required,
+                                {"id": btn_id - 1, "type": ctype, "name": name, "required": required,
                                  "css_selector": selector_slot + css_selector_this, "index": "b" + str(btn_id),
                                  "form_type": form_t[i]["type"]})  # 可能的提交按钮所在位置
                             btn_id += 1
@@ -301,11 +323,10 @@ class Form:
             im2 = Image.new("RGBA", (im.size[0], im.size[1]))
             draw = ImageDraw.Draw(im2)
             rect = t["rect"]
-
             draw.rectangle([(rect["left"] + position_slot["left"], rect["top"] + position_slot["top"]),
                             (rect["right"] + position_slot["left"], rect["bottom"] + position_slot["top"])],
                            fill=(0, 0, 255, 64))  # 块所在位置的框
-            font = ImageFont.truetype(os.path.dirname(__file__) + "/HEI.ttf", size=30,
+            font = ImageFont.truetype("HEI.ttf", size=30,
                                       encoding="unic")  # 设置字体,注意linux里如果没有字体需要指定/usr/share/fonts/HEI.ttf
             if len(self.form_list) - i < 10:  # 数字阴影长度
                 l = 20
@@ -327,7 +348,7 @@ class Form:
                                 (rect["right"] + position_slot["left"], rect["bottom"] + position_slot["top"])],
                                fill=(255, 255, 1, 64),
                                outline='black')  # 块所在位置的框
-                font = ImageFont.truetype(os.path.dirname(__file__) + "/HEI.ttf", size=15,
+                font = ImageFont.truetype("HEI.ttf", size=15,
                                           encoding="unic")
                 draw.rectangle([(rect["left"] + position_slot["left"], rect["top"] + 1 + position_slot["top"]),
                                 (rect["left"] + 23 + position_slot["left"], rect["top"] + 20 + position_slot["top"])],
@@ -352,7 +373,7 @@ class Form:
                                 (rect["right"] + position_slot["left"], rect["bottom"] + position_slot["top"])],
                                fill=(255, 0, 0, 64),
                                outline='black')  # 块所在位置的框
-                font = ImageFont.truetype(os.path.dirname(__file__) + "/HEI.ttf", size=20,
+                font = ImageFont.truetype("HEI.ttf", size=20,
                                           encoding="unic")
                 draw.rectangle([(rect["left"] - 20 + position_slot["left"], rect["top"] + position_slot["top"]),
                                 (rect["left"] + position_slot["left"], rect["top"] + 25 + position_slot["top"])],
@@ -364,8 +385,17 @@ class Form:
         im.save(self.output_folder + "/form_seg_shot.png")
 
     def __save_form_rules(self):
-        form_list = {"url": self.url, "form_check": 0, "main_form_index": 0, "forms": self.form_list_json}
+        form_list = {"url": self.url, "form_check": 0, "main_form_index": 0,"form_exp_link":setting.SERVER_ADDRESS + self.output_folder.replace("static","statics") + "/form_exp.json","forms": self.form_list_json}
         common.save_json(self.output_folder + "/form_list.json", form_list, encoding=setting.OUTPUT_JSON_ENCODING)
+        static_exp = {"time": {}}
+        static_exp["document_size"] = self.document_size
+        static_exp["document_tree_length"] = self.document_tree_length
+        static_exp["form_list_lines"] = len(
+            open(self.output_folder + "/form_list.json", 'r', encoding='utf-8').readlines())
+        static_exp["time"][self.time_crawl.name] = self.time_crawl.getInterval()
+        static_exp["time"][self.time_find_form_and_generate_rules.name] = self.time_find_form_and_generate_rules.getInterval()
+        common.save_json(self.output_folder + "/form_exp.json", static_exp,
+                         encoding=setting.OUTPUT_JSON_ENCODING)
 
     def __get_element(self, node):
         # for XPATH we have to count only for nodes with same type!
@@ -378,12 +408,20 @@ class Form:
         else:
             return node.name
 
-    def __get_css_selector(self, node):
-        path = [self.__get_element(node)]
+    def __get_css_selector(self, node,parents=0):
+        if parents>0:
+            path = []
+        else:
+            path = [self.__get_element(node)]
+        i = 0
+        # print(path)
         for parent in node.parents:
+            i = i + 1
             if parent.name == "[document]":
                 break
-            path.insert(0, self.__get_element(parent))
+            if i > parents:
+                path.insert(0, self.__get_element(parent))
+            # print(path)
         return ' > '.join(path)  # 一路拼接即得到了css selector
 
     def remove_slash(self, path):

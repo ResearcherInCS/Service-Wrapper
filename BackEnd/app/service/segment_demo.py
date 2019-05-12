@@ -1,18 +1,3 @@
-# Copyright 2018 Xiya Lyu
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
-
 import sys
 from segment import Segment
 from lcypytools import common
@@ -29,8 +14,8 @@ if __name__ == "__main__":
         form_path = sys.argv[4]
     except:
         poke = "test"
-        url = "http://www.ceic.ac.cn/speedsearch?time=7"
-        form_check = 1 # 是否检索表单
+        url = "https://movie.douban.com/chart"
+        form_check = 0 # 是否检索表单
         form_path = "form_list.json"
 
     folder_name = "static/"+ poke# 生成随机时间戳
@@ -41,10 +26,10 @@ if __name__ == "__main__":
         # spliter.segment(url=sys.argv[1], output_folder=folder_name, is_output_images=False)
         spliter.segment(url=url, output_folder=folder_name, is_output_images=False)
         spliter.browser.quit()
-    except:
+    except Exception as err:
         traceback.print_exc()
         spliter.browser.quit()
-        log.write_without_datetime("503 Procedure failed,please retry!")
+        log.write_without_datetime("503 Procedure failed,please retry! Error is:"+str(err))
     exit(0)
     # folder_name = "data/weather"
     # folder_name = "data/ocean"

@@ -1,22 +1,7 @@
-# Copyright 2018 Xiya Lyu
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
-
+import sys
 from form import Form
 from lcypytools import common
 import traceback
-import sys
 """
 TODO:细微结构差异要合并！！！
 """
@@ -26,20 +11,21 @@ if __name__ == "__main__":
         url = sys.argv[1]
     except:
         poke = "form_test1"
-        url = "http://gujia.mlr.gov.cn/JGPublish/Publish/Index"
+        url = "https://movie.douban.com/chart"
 
     folder_name = "static/"+ poke# 生成随机时间戳
     common.prepare_clean_dir(folder_name)  # 清空原有目录信息
     log = common.log(filename=folder_name + "/process.log")  # 打开log
     spliter = Form(log=log)
     try:
+        a = 1/0
         # spliter.segment(url=sys.argv[1], output_folder=folder_name, is_output_images=False)
         spliter.segment(url=url, output_folder=folder_name, is_output_images=False)
         spliter.browser.quit()
-    except:
+    except Exception as err:
         traceback.print_exc()
         spliter.browser.quit()
-        log.write_without_datetime("503 Procedure failed,please retry!")
+        log.write_without_datetime("503 Procedure failed,please retry! Error is:"+str(err))
     exit(0)
     # folder_name = "data/weather"
     # folder_name = "data/ocean"
@@ -48,3 +34,5 @@ if __name__ == "__main__":
     # url = "http://www.gov.cn/premier/lkq_wz.htm"
     # poke = str(int(time.time()))+str(random.randint(1,10000))
     # folder_name = "static/"+ poke# 生成随机时间戳
+
+

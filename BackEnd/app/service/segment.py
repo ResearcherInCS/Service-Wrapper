@@ -1,24 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-# Copyright 2018 Xiya Lyu
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
-
 import operator
 import time
 
+import os
+from typeAnalyse import typeAnalyse
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.options import Options
@@ -29,11 +15,13 @@ from PIL import Image, ImageDraw, ImageFont
 from lcypytools import common
 import bs4
 from pyquery import PyQuery as pq
+from lcypytools.common import Timer
 
 import requests
 import shutil
-import setting as setting
-import os
+import setting
+
+
 # 根据html源码和rank得到text文本
 def get_text_from_rank(htm, rank):
     i = 0
@@ -50,18 +38,14 @@ def get_text_from_rank(htm, rank):
 这里会把同一级的元素全都算进去，就算他们结构不同
 因为，级别用lid表示，每一层都独一无二，所以错误率很低！！
 """
+
+
 class Segment:
     def __init__(self, log, form_check=0, form_path="form_list.json"):
-        options = webdriver.ChromeOptions()
-        if setting.PRODUCTION:
-            options.binary_location = setting.CHROME_BINARY_LOCATION_PRODUCTION
-            path = setting.DRIVER_PATH_PRODUCTION
-        else:
-            options.binary_location = setting.CHROME_BINARY_LOCATION_LOCAL
-            path = os.path.dirname(__file__) + setting.DRIVER_PATH_PRODUCTION_LOCAL  # upload 修改
-
+        options = Options()
+        options.binary_location = setting.CHROME_BINARY_LOCATION
         options.add_argument('--headless')  # 不显示浏览器
-        self.browser = webdriver.Chrome(chrome_options=options, executable_path=path)
+        self.browser = webdriver.Chrome(chrome_options=options, executable_path=setting.DRIVER_PATH)
         self.browser.set_window_size(setting.SCREEN_WIDTH, 800)  # set the window size that you need
         self.parser = HTMLParser()
         self.log = log
@@ -71,32 +55,47 @@ class Segment:
     def segment(self, url, output_folder="output", is_output_images=False):
         self.url = url
         self.output_folder = self.remove_slash(output_folder)  # 去除冗余信息后得到的路径
-
+        """
+        爬取表单页面时间、查找表单时间、处理动态表单输入内容时间、
+        网页分块时间、生成并对网页主题块进行排序的时间、生成最终规则文档的时间
+        """
+        self.time_crawl = Timer("crwal_static_page")
         self.log.write("Crawl HTML Document from %s,please wait for about 40s(max 60s)" % self.url)
         self.__crawler()  # 爬取页面
+        self.time_crawl.end()
 
+        self.time_form_handle = Timer("input_forms_handle")
         self.log.write("Handling the input forms on %s" % self.url)
         self.__read_form_rules_and_type()  # 爬取页面
+        self.time_form_handle.end()
 
+        self.time_web_segmentation = Timer("web_segmentation")
         self.log.write("Run Pruning on %s" % self.url)
         self.__pruning()  # 得到广度优先搜索列表
         self.log.write("Run Partial Tree Matching on %s" % self.url)
         self.__partial_tree_matching()
         self.log.write("Run Backtracking on %s" % self.url)
         self.__backtracking()
-
         self.log.write("Merging and generating rules and blocks on %s,process:0%%" % (self.url))
         self.__output()
+        self.time_web_segmentation.end()
+
+        self.time_web_seg_sort = Timer("web_seg_sort")
         self.log.write("Selecting the main segment on %s" % self.url)
         self.__select_main_segment_top_min()
         self.log.write("Generating sections on %s" % self.url)
         self.__generate_sections()
+        self.time_web_seg_sort.end()
+
+        self.time_generate_documents = Timer("generate_documents")
         self.log.write("Generating api_info on  %s" % self.url)
         self.__generate_api_info()
         self.log.write("Generating rules on  %s" % self.url)
         self.__generate_rules()
+        self.time_generate_documents.end()
         self.log.write("Output Result JSON File on  %s" % self.url)
         self.__save()
+
         if is_output_images:
             self.log.write("Output Images on  %s" % self.url)
             self.__output_images()
@@ -110,6 +109,8 @@ class Segment:
         try:
             time_start = time.time()
             self.browser.get(self.url)
+            self.document_size = len(self.browser.page_source)
+            self.document_tree_length = self.browser.execute_script("return document.getElementsByTagName('*').length")
             time_end = time.time()
             self.interval = time_end - time_start  # 记录第一次打开页面需要多长时间，下次就等待多长时间
             time.sleep(3)  # 强行等待3s
@@ -120,6 +121,9 @@ class Segment:
         self.page = pq(self.browser.page_source.replace('xmlns', 'another_attr'))  # pyquery
         self.th_num = self.page("th").length
         self.soup = BeautifulSoup(self.browser.page_source, 'html.parser')  # 标准库方式载入页面源代码
+
+
+
         try:
             self.page_height = self.browser.find_element_by_tag_name("body").rect["height"]  # 找到body大小
             self.browser.set_window_size(setting.SCREEN_WIDTH, self.page_height)  # 设置窗口大小
@@ -129,6 +133,7 @@ class Segment:
         mark
         """
         self.browser.save_screenshot(self.output_folder + "/screenshot.png")  # 截屏
+        ######
 
     """
     通过下面的操作，程序得到了整个网页中所有的tag节点的信息，并按照广度优先搜索的顺序，存储到了self.allnodes列表中
@@ -137,7 +142,12 @@ class Segment:
     """
 
     def __pruning(self):
-        tagbody = self.soup.find("body")  # 得到body体
+        # 处理特定页面
+        if self.url.find("http://www.dsac.cn") >= 0:
+            self.soup = self.soup.find("div", class_="mainBar_body")
+            tagbody = self.soup
+        else:
+            tagbody = self.soup.find("body")  # 得到body体
         tagbody["lid"] = str(-1)
         tagbody["sn"] = str(1)  # <body lid="-1" sn="1".../>
         tagbody["ttype"] = 0  # 是否为iframe中的标签
@@ -266,6 +276,7 @@ class Segment:
 <li class="header-dropdown-item tc cur-hand " lid="35" sn="2">服务商</li>
 </ul>] inputspanspaniullili
         """
+        # print(structure)
         return structure
 
     def __get_node_children_structure(self, node):
@@ -458,7 +469,7 @@ class Segment:
                             if "alt" in img.attrs:
                                 dict_img["alt"] = img["alt"]
                             if "title" in img.attrs:
-                                dict_img["title"] = img["alt"]
+                                dict_img["title"] = img["title"]
                             dict_img["type"] = "img"
                             dict_img["css_selector"] = self.__get_css_selector(img)  # 得到css_selector
                             imglist.append(dict_img)
@@ -493,7 +504,7 @@ class Segment:
                         if "alt" in img.attrs:
                             dict_img["alt"] = img["alt"]
                         if "title" in img.attrs:
-                            dict_img["title"] = img["alt"]
+                            dict_img["title"] = img["title"]
                         dict_img["type"] = "img"
                         dict_img["css_selector"] = self.__get_css_selector(img)  # 得到css_selector
                         images.append(dict_img)
@@ -529,7 +540,7 @@ class Segment:
                 # extract text from node -- end
                 cssselectors.append(self.__get_css_selector(node))
 
-            if len(texts) == 0 and len(images) == 0:
+            if len(texts) == 0 and len(images) == 0 and len(links) == 0:
                 continue
 
             lid = block[0]["lid"]
@@ -543,6 +554,7 @@ class Segment:
 
             segs[sid]["records"].append(
                 {"record_id": rid, "texts": texts, "images": images, "css_selector": cssselectors, "links": links})
+            print(cssselectors)
             rid += 1
 
         self.json_data = dict()
@@ -551,7 +563,7 @@ class Segment:
         self.json_data["title"] = self.browser.title
 
     # 找到主要至多min2个的section
-    def __select_main_segment_top_min(self, min2=8):
+    def __select_main_segment_top_min(self, min2=18):
         segments = self.json_data["segments"]
         self.main_sec = None
         max_len = 0
@@ -638,12 +650,9 @@ class Segment:
             im2 = Image.new("RGBA", (im.size[0], im.size[1]))
             draw = ImageDraw.Draw(im2)
             rect = t["rect"]
-
-
             draw.rectangle([(rect["left"], rect["top"]), (rect["right"], rect["bottom"])],
                            fill=(0, 0, 255, 64))  # 块所在位置的框
-            print(os.path.dirname(__file__) + "/HEI.ttf")
-            font = ImageFont.truetype(os.path.dirname(__file__) + "/HEI.ttf", size=30,
+            font = ImageFont.truetype("HEI.ttf", size=30,
                                       encoding="unic")  # 设置字体,注意linux里如果没有字体需要指定/usr/share/fonts/HEI.ttf
             if len(self.candidate) - i < 10:  # 数字阴影长度
                 l = 20
@@ -669,19 +678,22 @@ class Segment:
             description = self.browser.title
         self.api_info["api_description"] = description
         self.api_info["api_url"] = self.url
-        self.api_info["img_link"] = setting.SERVER_ADDRESS + self.output_folder.replace("static",
-                                                                                         "statics") + "/seg_shot.png"
+        self.api_info["img_link"] = setting.SERVER_ADDRESS + self.output_folder + "/seg_shot.png"
         # self.api_info["img_seg_link"] = setting.SERVER_ADDRESS + self.output_folder + "/seg_shot.png"
         self.api_info["api_crawl_rules_link"] = setting.SERVER_ADDRESS + self.output_folder.replace("static",
                                                                                                     "statics") + "/rules_list.json"
         self.api_info["json_link"] = setting.SERVER_ADDRESS + self.output_folder.replace("static",
-                                                                                         "statics") + "/example.json"  # 已废弃
-        self.api_info["main_sec_id"] = 0  # 默认主题块位置
+                                                                                         "statics") + "/example.json"
+        self.api_info["static_exp_link"] = setting.SERVER_ADDRESS + self.output_folder.replace("static",
+                                                                                         "statics") + "/static_exp.json"
+        self.api_info["main_sec_id"] = [0]  # 默认主题块位置
         self.api_info["sections"] = []
         self.api_info["candidate"] = []
+        sid = 0
         for c in self.candidate:
+            sid = sid + 1
             self.api_info["sections"].append(c["content"])
-            format_list = []
+            format_list = {"section_name":"section_"+ str(sid),"items":[]}
             if len(c["seg"]["records"]) > 0:
                 id = 0
                 info = c["seg"]["records"][0]  # 取第1个元素，下面写判断th的数组情况
@@ -706,11 +718,16 @@ class Segment:
                 for text in info["texts"]:
                     format = dict()
                     format["id"] = id
-                    text_t = self.__get_tag_attr(text["css_selector"], text['text'])
-                    if len(text_t) <= 0:
-                        format["name"] = "text_" + str(id)
+                    analyse = typeAnalyse(text['text'],"_S" + str(sid) + "I" + str(id)).getType()
+                    # 使用KG工具对文本进行分词并尝试分析字段含义
+                    if analyse == "text": # 如果没分析出来字段类型，尝试默认分析方法
+                        text_t = self.__get_tag_attr(text["css_selector"], text['text'])
+                        if len(text_t) <= 0:
+                            format["name"] = "text_" + "S" + str(sid) + "I" + str(id)
+                        else:
+                            format["name"] = text_t
                     else:
-                        format["name"] = text_t
+                        format["name"] = analyse
                     if self.th_num > 0 and text["css_selector"].find("table") >= 0:
                         # 如果网页存在th标签且元素在表格内
                         format["name"] = th[str(text['rank'])]  # 填充成上面th的值
@@ -719,7 +736,7 @@ class Segment:
                     format["example"] = text['text']
                     format["select"] = 1
                     format["parent_id"] = -1  # 直接父元素为-1
-                    format_list.append(format)
+                    format_list["items"].append(format)
                     text["id"] = id
                     id += 1
                 for image in info["images"]:
@@ -740,7 +757,7 @@ class Segment:
                     elif "class" in child:
                         text_t = child["class"]
                     if len(text_t) <= 0:
-                        format["name"] = "image_" + str(id)
+                        format["name"] = "image_" + "S" + str(sid) + "I" + str(id)
                     else:
                         format["name"] = text_t
                     format["description"] = "image_description"
@@ -758,32 +775,37 @@ class Segment:
                     format["example"] = exp
                     format["select"] = 1
                     format["parent_id"] = -1  # 直接父元素为-1
-                    format_list.append(format)
+                    format_list["items"].append(format)
                     image["id"] = id
                     id += 1
                 for link in info["links"]:
                     format = dict()
                     format["id"] = id
                     format["parent_id"] = -1
-                    format["name"] = "link_" + str(id)
+                    format["name"] = "link_" + "S" + str(sid) + "I" + str(id)
                     t = format["name"]
                     tid = format["id"]  # 临时保存linkid
                     format["description"] = "link_description"
                     format["type"] = "link"
                     format["example"] = "{href:'" + link['href'] + "'}"
                     format["select"] = 1
-                    format_list.append(format)
+                    format_list["items"].append(format)
                     link["id"] = id
                     id += 1
                     for text in link["texts"]:
                         format = dict()
                         format["id"] = id
                         text["id"] = id
-                        text_t = self.__get_tag_attr(text["css_selector"], text['text'])
-                        if len(text_t) <= 0:
-                            format["name"] = "text_" + str(id)
+                        analyse = typeAnalyse(text['text'],"_S" + str(sid) + "I" + str(id)).getType()
+                        # 使用KG工具对文本进行分词并尝试分析字段含义
+                        if analyse == "text":  # 如果没分析出来字段类型，尝试默认分析方法
+                            text_t = self.__get_tag_attr(text["css_selector"], text['text'])
+                            if len(text_t) <= 0:
+                                format["name"] = "text_" + "S" + str(sid) + "I" + str(id)
+                            else:
+                                format["name"] = "link_text_" + "S" + str(sid) + "I" + str(id)
                         else:
-                            format["name"] = "link_text_" + str(id)
+                            format["name"] = analyse
                         if self.th_num > 0 and text["css_selector"].find("table") >= 0:
                             # 如果网页存在th标签且元素在表格内
                             format["name"] = th[str(text['node_rank'])]  # 填充成上面th的值
@@ -791,7 +813,7 @@ class Segment:
                         format["type"] = "text"
                         format["example"] = text['text']
                         format["select"] = 1
-                        format_list.append(format)
+                        format_list["items"].append(format)
                         format["parent_id"] = tid
                         id += 1
                     for image in link["images"]:
@@ -814,7 +836,7 @@ class Segment:
                         elif "class" in child:
                             text_t = child["class"]
                         if len(text_t) <= 0:
-                            format["name"] = "link_image_" + str(id)
+                            format["name"] = "link_image_" + "S" + str(sid) + "I" + str(id)
                         else:
                             format["name"] = text_t
                         format["description"] = "link_image_description_related_to_" + t
@@ -832,7 +854,7 @@ class Segment:
                         format["example"] = exp
                         format["select"] = 1
                         format["parent_id"] = tid
-                        format_list.append(format)
+                        format_list["items"].append(format)
                         id += 1
             self.api_info["candidate"].append(format_list)
 
@@ -911,6 +933,21 @@ class Segment:
         common.save_json(self.output_folder + "/api_info.json", self.api_info, encoding=setting.OUTPUT_JSON_ENCODING)
         common.save_json(self.output_folder + "/origin_json.json", self.json_data,
                          encoding=setting.OUTPUT_JSON_ENCODING)
+        static_exp ={"time":{}}
+        static_exp["document_size"] = self.document_size
+        static_exp["document_tree_length"] = self.document_tree_length
+        static_exp["rules_list_lines"] = len(open(self.output_folder + "/rules_list.json", 'r',encoding='utf-8').readlines())
+        static_exp["api_info_lines"] = len(open(self.output_folder + "/api_info.json", 'r',encoding='utf-8').readlines())
+
+        static_exp["time"][self.time_crawl.name] = self.time_crawl.getInterval()
+        static_exp["time"][self.time_form_handle.name] = self.time_form_handle.getInterval()
+        static_exp["time"][self.time_web_segmentation.name] = self.time_web_segmentation.getInterval()
+        static_exp["time"][self.time_web_seg_sort.name] = self.time_web_seg_sort.getInterval()
+        static_exp["time"][self.time_generate_documents.name] = self.time_generate_documents.getInterval()
+        common.save_json(self.output_folder + "/static_exp.json", static_exp,
+                         encoding=setting.OUTPUT_JSON_ENCODING)
+
+
 
     def __output_images(self):
         tmp_path = self.output_folder + "/tmp"
@@ -941,7 +978,6 @@ class Segment:
                         bg.paste(im, im)
                         im = bg
                         im.save(target_file_name)
-
                         image["path"] = target_file_name
                     except Exception:
                         pass
