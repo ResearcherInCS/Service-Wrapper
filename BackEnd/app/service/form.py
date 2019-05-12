@@ -119,19 +119,17 @@ class Form:
                                "css_selector": css_selector + " >f> " + selector,"in_selector":selector})
             form_f = iframe_soup.find_all("input")
             for i in range(len(form_f)):
-                ctype = form_f[i].attrs["type"]
-                if (form_f[i].name=="input" and (ctype == "submit" or ctype=="button")) or form_f[i].name=="button":
-                    selector_t = self.__get_css_selector(form_f[i])  # 临时selector，判断此item有没有在其他form中出现
-                    t = True
-                    for f in form_t:
-                        if selector_t.find(f["in_selector"]) >= 0:
-                            t = False
-                            break
-                    if t:
-                        form_f[i] = form_f[i].parent.parent.parent
-                        selector = self.__get_css_selector(form_f[i], parents=2)  # 元素的上两级找起
-                        form_t.append({"form": form_f[i], "type": 1,
-                                       "css_selector": css_selector + " >f> " + selector,"in_selector":selector})
+                selector_t = self.__get_css_selector(form_f[i])  # 临时selector，判断此item有没有在其他form中出现
+                t = True
+                for f in form_t:
+                    if selector_t.find(f["in_selector"]) >= 0:
+                        t = False
+                        break
+                if t:
+                    form_f[i] = form_f[i].parent.parent.parent
+                    selector = self.__get_css_selector(form_f[i], parents=2)  # 元素的上两级找起
+                    form_t.append({"form": form_f[i], "type": 1,
+                                   "css_selector": css_selector + " >f> " + selector,"in_selector":selector})
 
             self.browser.switch_to.default_content()  # 切换到默认页面
 
