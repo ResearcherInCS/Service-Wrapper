@@ -369,7 +369,9 @@ def url_construct(api_id):
 
     api_crawl_rules_link = service.api_crawl_rules_link
     form_rules_link = service.form_rules_link
-    api_parameters = service.candidate[service.main_sec_id]
+    api_parameters = []
+    for sec_id in service.main_sec_id:
+        api_parameters =  api_parameters + service.candidate[sec_id]["items"]
     api_url = service.api_url
 
     candidate_parameters = service.api_request_parameters_candidate # 可以使用的参数集合
@@ -386,19 +388,18 @@ def url_construct(api_id):
     request_parameters = [i for i in request_parameters_ori if i in candidate_parameters]
     ret_cha = [".".join(i) for i in request_parameters_ori if i not in candidate_parameters]
 
+    try:
+        # api_parameters.sort(key=lambda k: k["id"])
+        api_crawl_rules = []
 
-    api_parameters.sort(key=lambda k: k["id"])
-
+        form_rules_link_ex = api_crawl_rules_link.split('/statics/', 1)[1]
+        strss = read_file_as_str("static/" + form_rules_link_ex)
+        api_crawl_rules_two = json.loads(strss)
+        for sec_id in service.main_sec_id:
+            api_crawl_rules = api_crawl_rules + api_crawl_rules_two[sec_id]
+    except:
+        return ReNum.REQUEST_ERROR.value()
     if api_crawl_rules_link and api_parameters:
-        try:
-            form_rules_link_ex = api_crawl_rules_link.split('/statics/', 1)[1]
-            strss = read_file_as_str("static/" + form_rules_link_ex)
-            api_crawl_rules_two = json.loads(strss)
-            # api_crawl_rules_two = requests.get(api_crawl_rules_link).json()
-            api_crawl_rules = api_crawl_rules_two[service.main_sec_id]
-        except:
-            return ReNum.REQUEST_ERROR.value()
-
         try:
             crawl = Crawler(app.logger)
 
@@ -621,20 +622,21 @@ def candidate_add_query_name(candidates):
                 query_name_str = ".".join(query_name)
                 every_response_describe["query_name"] = query_name_str
     return candidates
-
-def get_api_request_parameters_candidate_Level2(candidates, select):
-    candidate = candidates[select]
+    
+def get_api_request_parameters_candidate_Level2(candidates, selects):
     api_request_parameters_candidate_level2 = []
-    for every_response_describe in candidate:
-        if every_response_describe["type"] != "link" and every_response_describe["type"] != "img" and \
-                every_response_describe["type"] != "background_img":
-            every_parameter = {
-                "type": "text",
-                "query_name": every_response_describe["query_name"],
-                "level": 2,
-                "required": False,
-                "example": every_response_describe["example"],
-                "description": "[返回结果的筛选参数]: " + every_response_describe["description"]
-            }
-            api_request_parameters_candidate_level2.append(every_parameter)
+    for select in selects:
+        candidate = candidates[select]
+        for every_response_describe in candidate["items"]:
+            if every_response_describe["type"] != "link" and every_response_describe["type"] != "img" and \
+                    every_response_describe["type"] != "background_img":
+                every_parameter = {
+                    "type": "text",
+                    "query_name": every_response_describe["query_name"],
+                    "level": 2,
+                    "required": False,
+                    "example": every_response_describe["example"],
+                    "description": "[返回结果的筛选参数]: " + every_response_describe["description"]
+                }
+                api_request_parameters_candidate_level2.append(every_parameter)
     return api_request_parameters_candidate_level2
