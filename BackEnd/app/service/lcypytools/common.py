@@ -4,7 +4,25 @@ from datetime import datetime
 import json
 import numpy as np
 import shutil
+import time
 
+class Timer:
+    def __init__(self,name=""):
+        self.name = name
+        self.time_interval = -1
+        t = datetime.now()
+        self.time_start = t.hour * 3600 * 1000.0 + t.minute * 60 * 1000.0 + t.second * 1000.0 + t.microsecond / 1000.0
+        print("time_start:"+str(self.time_start))
+
+    def end(self):
+        t = datetime.now()
+        time_end = t.hour * 3600 * 1000.0 + t.minute * 60 * 1000.0 + t.second * 1000.0 + t.microsecond / 1000.0
+        print("time_end:"+str(time_end))
+        self.time_interval = float(time_end - self.time_start)
+        print('Total time of '+self.name + ':', self.time_interval)
+
+    def getInterval(self):
+        return str(round(self.time_interval,0))
 
 def load_csv(path):
     f = open(path)
@@ -78,7 +96,7 @@ class MyEncoder(json.JSONEncoder):
 
 def save_json(path, data, encoding="utf-8"):
     with open(path, 'w', encoding=encoding) as outfile:
-        json.dump(data, outfile, ensure_ascii=False, cls=MyEncoder,skipkeys=True)
+        json.dump(data, outfile, ensure_ascii=False, cls=MyEncoder,skipkeys=True,sort_keys=True, indent=4, separators=(',', ':'))
 
 
 def load_json(path, encoding="utf-8"):
