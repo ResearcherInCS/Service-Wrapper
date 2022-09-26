@@ -1,8 +1,8 @@
 ## Service Wrapper
 
 - [中文](https://github.com/ResearcherInCS/Service-Wrapper/blob/master/README_chn.md)
-- 已获得中国国家知识产权局专利授权。
-- It has obtained patent authorization from the State Intellectual Property Office of China.
+已获得中国国家知识产权局专利授权。
+It has obtained patent authorization from the State Intellectual Property Office of China.
 
 ## What is Service Wrapper
 
