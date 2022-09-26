@@ -2,7 +2,7 @@
 
 - [English](README.md)
 
-  已获得中国国家知识产权局专利授权。
+- 已获得中国国家知识产权局专利授权。
 
 ## 什么是Service Wrapper
 
