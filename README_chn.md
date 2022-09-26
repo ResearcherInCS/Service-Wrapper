@@ -2,6 +2,8 @@
 
 - [English](README.md)
 
+已获得中国国家知识产权局专利授权。
+
 ## 什么是Service Wrapper
 
 **Service Wrapper**是一种基于[网页分割算法](https://github.com/liaocyintl/WebSegment)的网页数据提取封装系统。该系统仅需用户少量点击即可得到网页中的**核心元数据的位置描述信息**，将HTML文档转换为结构化数据，封装成服务，并提供可直接调用的**RESTFul API接口**。
