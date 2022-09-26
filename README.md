@@ -2,6 +2,9 @@
 
 - [中文](https://github.com/ResearcherInCS/Service-Wrapper/blob/master/README_chn.md)
 
+已获得中国国家知识产权局专利授权。
+It has obtained patent authorization from the State Intellectual Property Office of China.
+
 ## What is Service Wrapper
 
 **Service Wrapper** is a web data extraction and packaging system based on [web page segmentation algorithm](https://github.com/liaocyintl/WebSegment). The system requires only a few clicks to get the **location description information** of the core metadata in the web page, converts the HTML document into structured data, encapsulates it as a service, and provides a **RESTFul API** that can be directly invoked.
